@@ -74,9 +74,8 @@ outpass-system/
 
 ## 👩‍💻 Author
 
-**Your Name**  
-Engineering Student | Aspiring Developer  
-[LinkedIn](your-link) | [GitHub](your-link)
+Elakkiya S   
+Engineering Student | Aspiring Data Scientist 
 
 ---
 
