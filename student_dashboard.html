@@ -1,0 +1,951 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DOMS | Professional Student Dashboard</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        :root {
+            /* Suggested Colors: Blue, White, Light cyan, Soft green incorporated into gradient and variables */
+            --bg-grad: linear-gradient(135deg, #0f172a, #0c4a6e, #064e3b);
+            --glass-bg: rgba(255, 255, 255, 0.05);
+            --glass-border: rgba(255, 255, 255, 0.1);
+            --primary: #0ea5e9;
+            /* Light cyan/blue */
+            --success: #10b981;
+            /* Soft green */
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --text-main: #ffffff;
+            --text-muted: #94a3b8;
+        }
+
+        body {
+            background: var(--bg-grad);
+            color: var(--text-main);
+            font-family: 'Inter', sans-serif;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        .glass-card {
+            background: var(--glass-bg);
+            backdrop-filter: blur(25px);
+            -webkit-backdrop-filter: blur(25px);
+            border: 1px solid var(--glass-border);
+            border-radius: 16px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+        }
+
+        /* Topnav */
+        .topnav {
+            height: 70px;
+            background: rgba(15, 23, 42, 0.6);
+            backdrop-filter: blur(15px);
+            border-bottom: 1px solid var(--glass-border);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 2rem;
+        }
+
+        .logo-area {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: #fff;
+        }
+
+        .logo-icon {
+            color: var(--primary);
+            font-size: 1.5rem;
+        }
+
+        .wrapper {
+            display: flex;
+            min-height: calc(100vh - 70px);
+        }
+
+        .sidebar {
+            width: 260px;
+            background: rgba(15, 23, 42, 0.4);
+            border-right: 1px solid var(--glass-border);
+            padding: 1.5rem 1rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .main-content {
+            flex: 1;
+            padding: 2rem;
+            overflow-y: auto;
+            position: relative;
+        }
+
+        .nav-link {
+            color: var(--text-muted);
+            border-radius: 8px;
+            padding: 0.8rem 1rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            font-weight: 500;
+            transition: 0.3s;
+            cursor: pointer;
+            text-decoration: none;
+        }
+
+        .nav-link:hover,
+        .nav-link.active {
+            background: rgba(14, 165, 233, 0.15);
+            color: var(--text-main);
+            transform: translateX(5px);
+            border-left: 3px solid var(--primary);
+        }
+
+        .nav-link i {
+            width: 20px;
+            text-align: center;
+            color: var(--primary);
+        }
+
+        /* Notifications Panel */
+        .bell-icon {
+            font-size: 1.3rem;
+            cursor: pointer;
+            position: relative;
+            transition: 0.2s;
+        }
+
+        .bell-icon:hover {
+            color: var(--primary);
+        }
+
+        .bell-anim {
+            animation: ring 1.5s infinite;
+            transform-origin: top center;
+        }
+
+        .notif-badge {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            background: var(--danger);
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+        }
+
+        .notif-panel {
+            position: fixed;
+            right: -350px;
+            top: 70px;
+            width: 320px;
+            height: calc(100vh - 70px);
+            background: rgba(15, 23, 42, 0.95);
+            backdrop-filter: blur(20px);
+            border-left: 1px solid var(--glass-border);
+            padding: 1.5rem;
+            transition: 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            z-index: 999;
+        }
+
+        .notif-panel.open {
+            right: 0;
+        }
+
+        .notif-card {
+            background: rgba(255, 255, 255, 0.05);
+            border-left: 3px solid var(--primary);
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+            animation: slideInLeft 0.5s ease-out forwards;
+            opacity: 0;
+            transform: translateX(20px);
+        }
+
+        .notif-card:nth-child(2) {
+            animation-delay: 0.1s;
+        }
+
+        .notif-card:nth-child(3) {
+            animation-delay: 0.2s;
+            border-left-color: var(--success);
+        }
+
+        /* Welcome Card */
+        .welcome-card {
+            position: relative;
+            overflow: hidden;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            animation: slideIn 0.6s ease-out;
+        }
+
+        .welcome-card::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(16, 185, 129, 0.15) 0%, transparent 60%);
+            animation: rotateGlow 15s linear infinite;
+            z-index: 0;
+        }
+
+        /* Circular Progress */
+        .circle-wrap {
+            width: 80px;
+            height: 80px;
+            background: conic-gradient(var(--success) 92%, rgba(255, 255, 255, 0.1) 0);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-left: auto;
+            position: relative;
+        }
+
+        .circle-wrap::after {
+            content: '';
+            position: absolute;
+            width: 66px;
+            height: 66px;
+            background: #0c364e;
+            border-radius: 50%;
+        }
+
+        .circle-val {
+            position: relative;
+            z-index: 2;
+            color: var(--success);
+            font-weight: 700;
+            font-size: 1.2rem;
+        }
+
+        @keyframes rotateGlow {
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes slideInLeft {
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        @keyframes ring {
+            0% {
+                transform: rotate(0);
+            }
+
+            10% {
+                transform: rotate(15deg);
+            }
+
+            20% {
+                transform: rotate(-10deg);
+            }
+
+            30% {
+                transform: rotate(5deg);
+            }
+
+            40% {
+                transform: rotate(-5deg);
+            }
+
+            50%,
+            100% {
+                transform: rotate(0);
+            }
+        }
+
+        .pulse-text {
+            animation: pulseAnim 2s infinite;
+        }
+
+        @keyframes pulseAnim {
+            0% {
+                opacity: 0.6;
+            }
+
+            50% {
+                opacity: 1;
+                text-shadow: 0 0 10px currentColor;
+            }
+
+            100% {
+                opacity: 0.6;
+            }
+        }
+
+        /* Timeline */
+        .timeline {
+            display: flex;
+            justify-content: space-between;
+            position: relative;
+            margin-top: 2rem;
+        }
+
+        .timeline::before {
+            content: '';
+            position: absolute;
+            top: 22px;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            background: var(--glass-border);
+            z-index: 1;
+        }
+
+        .timeline-bar {
+            position: absolute;
+            top: 22px;
+            left: 0;
+            width: 40%;
+            height: 2px;
+            background: var(--warning);
+            z-index: 2;
+            box-shadow: 0 0 10px var(--warning);
+        }
+
+        .step {
+            position: relative;
+            z-index: 3;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 80px;
+        }
+
+        .step-icon {
+            width: 46px;
+            height: 46px;
+            border-radius: 50%;
+            background: #0f172a;
+            border: 2px solid var(--glass-border);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: 0.3s;
+        }
+
+        .step.done .step-icon {
+            background: var(--success);
+            border-color: var(--success);
+            color: white;
+            box-shadow: 0 0 15px rgba(16, 185, 129, 0.3);
+        }
+
+        .step.active .step-icon {
+            background: var(--warning);
+            border-color: var(--warning);
+            color: white;
+            box-shadow: 0 0 15px rgba(245, 158, 11, 0.5);
+            animation: pulseAnim 2s infinite;
+        }
+
+        .step span {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            margin-top: 0.5rem;
+            text-align: center;
+        }
+
+        .form-control,
+        .form-select {
+            background: rgba(0, 0, 0, 0.2);
+            border: 1px solid var(--glass-border);
+            color: white;
+        }
+
+        .form-control:focus,
+        .form-select:focus {
+            background: rgba(0, 0, 0, 0.3);
+            border-color: var(--primary);
+            color: white;
+            box-shadow: none;
+        }
+
+        .table {
+            color: var(--text-main);
+            margin-top: 1rem;
+        }
+
+        .table th {
+            border-bottom-color: var(--glass-border);
+            color: var(--text-muted);
+            font-weight: 500;
+            background: transparent;
+        }
+
+        .table td {
+            border-bottom-color: var(--glass-border);
+            background: transparent;
+            vertical-align: middle;
+        }
+
+        .tab-content {
+            display: none;
+            animation: slideIn 0.4s ease-out;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+    </style>
+</head>
+
+<body>
+    <nav class="topnav">
+        <div class="logo-area">
+            <i class="fa-solid fa-graduation-cap logo-icon"></i> DOMS Student Portal
+        </div>
+        <div class="d-flex align-items-center gap-4">
+            <div class="bell-icon bell-anim" onclick="document.getElementById('notifPanel').classList.toggle('open')">
+                <i class="fa-regular fa-bell"></i>
+                <span class="notif-badge"></span>
+            </div>
+            <div class="d-flex align-items-center gap-3">
+                <div style="text-align: right; line-height: 1.2;">
+                    <div id="topNavName" style="font-weight: 600; font-size: 0.9rem;">Student</div>
+                    <div style="font-size: 0.75rem; color: var(--primary);">Student</div>
+                </div>
+                <img id="topNavAvatar" src="https://ui-avatars.com/api/?name=Student&background=0D8ABC&color=fff" class="avatar" alt="Profile">
+            </div>
+            <i class="fa-solid fa-circle-half-stroke" style="cursor:pointer; color:var(--text-muted);"></i>
+        </div>
+    </nav>
+
+    <!-- Slide-in Notifications -->
+    <div id="notifPanel" class="notif-panel">
+        <h5 class="mb-4 d-flex justify-content-between">
+            Notifications
+            <i class="fa-solid fa-times text-muted" style="cursor:pointer;"
+                onclick="document.getElementById('notifPanel').classList.remove('open')"></i>
+        </h5>
+        <div id="notifList"><p class="text-muted small">Loading notifications...</p></div>
+    </div>
+
+    <div class="wrapper">
+        <aside class="sidebar">
+            <a class="nav-link active" onclick="switchTab('dashboard', this)"><i class="fa-solid fa-border-all"></i>
+                Dashboard</a>
+            <a class="nav-link" onclick="switchTab('apply', this)"><i class="fa-solid fa-pen-to-square"></i> Apply
+                Outpass</a>
+            <a class="nav-link" onclick="switchTab('status', this)"><i class="fa-solid fa-spinner"></i> Outpass
+                Status</a>
+            <a class="nav-link" onclick="switchTab('history', this)"><i class="fa-solid fa-clock-rotate-left"></i> Leave
+                History</a>
+            <a class="nav-link" onclick="switchTab('qr', this)"><i class="fa-solid fa-qrcode"></i> QR Pass</a>
+            <a class="nav-link" onclick="document.getElementById('notifPanel').classList.toggle('open')"><i
+                    class="fa-solid fa-bell"></i> Notifications</a>
+
+            <div style="margin-top: auto;">
+                <a href="/" class="nav-link text-danger" style="border-left:none;"><i
+                        class="fa-solid fa-right-from-bracket"></i> Logout</a>
+            </div>
+        </aside>
+
+        <main class="main-content">
+            <!-- DASHBOARD HOME -->
+            <div id="dashboard" class="tab-content active">
+                <div class="glass-card welcome-card">
+                    <div style="position: relative; z-index: 1;">
+                        <h2 id="welcomeHeading" style="font-weight: 700; margin-bottom: 0.5rem;">Welcome Back 👋</h2>
+                        <div class="d-flex flex-wrap gap-4 text-muted" style="font-size: 0.9rem;">
+                            <span><i class="fa-solid fa-id-card text-primary"></i> <span id="rollDisplay">--</span></span>
+                            <span><i class="fa-solid fa-building text-primary"></i> <span id="deptDisplay">--</span></span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row g-4 mb-4">
+                    <div class="col-md-3">
+                        <div class="glass-card stat-card p-3 h-100 d-flex flex-column justify-content-between">
+                            <div class="text-muted small mb-2">Attendance Standing</div>
+                            <div class="d-flex justify-content-between align-items-end">
+                                <div id="attendanceLabel" style="color: var(--success); font-weight:600;"><i class="fa-solid fa-shield-check"></i> Excellent</div>
+                                <div class="circle-wrap"><span class="circle-val" id="attendancePct">92%</span></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="glass-card stat-card p-4 h-100">
+                            <div class="text-muted small mb-2">Total Requests (Sem)</div>
+                            <h3 class="mb-0" id="totalReqs">0</h3>
+                            <div class="d-flex justify-content-between mt-3 small">
+                                <span class="text-success"><i class="fa-solid fa-check"></i> <span id="approvedReqs">0</span> Appr</span>
+                                <span class="text-danger"><i class="fa-solid fa-xmark"></i> <span id="rejectedReqs">0</span> Rej</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="glass-card stat-card p-4 h-100 border-warning" style="background: rgba(245, 158, 11, 0.05);">
+                            <div class="text-muted small mb-2">Current Status</div>
+                            <h5 class="text-warning pulse-text mb-0" id="currentStatus"><i class="fa-solid fa-spinner"></i> No Active Request</h5>
+                            <div class="small text-muted mt-2" id="currentStatusSub">Submit a new request</div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="glass-card stat-card p-4 h-100">
+                            <div class="text-muted small mb-2">Next Return Time</div>
+                            <h5 class="mb-0 text-primary" id="nextReturn">--</h5>
+                            <div class="small text-muted mt-2" id="nextReturnSub"><i class="fa-regular fa-clock text-primary"></i> No pending pass</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- APPLY OUTPASS -->
+            <div id="apply" class="tab-content">
+                <div class="glass-card p-4 mx-auto" style="max-width: 800px;">
+                    <h4 class="mb-4"><i class="fa-solid fa-file-signature text-primary"></i> Apply for Outpass</h4>
+                    <form>
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label text-muted small">Student Name</label>
+                                <input type="text" id="formStudentName" class="form-control" readonly>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label text-muted small">Roll Number</label>
+                                <input type="text" id="formRollNumber" class="form-control" readonly>
+                            </div>
+                            <div class="col-12">
+                                <label class="form-label text-muted small">Reason for Leave</label>
+                                <select id="reason" class="form-select">
+                                    <option value="">Select a reason...</option>
+                                    <option value="Emergency Leave">Emergency Leave</option>
+                                    <option value="Medical Checkup">Medical Checkup</option>
+                                    <option value="Family Function">Family Function</option>
+                                    <option value="Weekend Home Visit">Weekend Home Visit</option>
+                                </select>
+                            </div>
+                            <div class="col-12">
+                                <label class="form-label text-muted small">Destination Address</label>
+                                <input id="destination" type="text" class="form-control" placeholder="Enter full destination address">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label text-muted small">Exit Date & Time</label>
+                                <input id="exit_time" type="datetime-local" class="form-control">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label text-muted small">Expected Return</label>
+                                <input id="return_time" type="datetime-local" class="form-control">
+                            </div>
+                            <div class="col-12">
+                                <label class="form-label text-muted small">Emergency Contact Number</label>
+                                <input id="contact" type="text" class="form-control" placeholder="Parent/Guardian Contact">
+                            </div>
+                            <div class="col-12">
+                                <label class="form-label text-muted small">Upload Proof (Optional)</label>
+                                <input type="file" class="form-control">
+                            </div>
+                            <div class="col-12 mt-4 d-flex gap-3">
+                                <button type="button" class="btn btn-outline-light w-50 py-2" onclick="resetForm()">Reset Form</button>
+                                <button type="button" id="submitBtn" class="btn btn-primary w-50 py-2 fw-bold border-0"
+                                    style="background: var(--primary);" onclick="submitReq(this)">
+                                    Submit Request
+                                </button>
+                            </div>
+                            <div id="formMsg" class="col-12" style="display:none;"></div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- OUTPASS STATUS -->
+            <div id="status" class="tab-content">
+                <div class="glass-card p-4">
+                    <h4 class="mb-4">Live Approval Timeline</h4>
+                    <div id="statusList">
+                        <p class="text-muted">Loading your requests...</p>
+                    </div>
+                </div>
+            </div>
+            <div id="history" class="tab-content">
+                <div class="glass-card p-4">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <h4 class="mb-0">Leave History</h4>
+                        <div class="d-flex gap-2">
+                            <input type="text" class="form-control form-control-sm"
+                                placeholder="Search by reason or date..." style="width: 250px;">
+                            <button class="btn btn-outline-primary btn-sm"><i class="fa-solid fa-download"></i> Download
+                                PDF</button>
+                        </div>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Reason</th>
+                                    <th>Exit Time</th>
+                                    <th>Return Time</th>
+                                    <th>QR Status</th>
+                                    <th>Approval Status</th>
+                                </tr>
+                            </thead>
+                            <tbody id="historyBody">
+                                <tr><td colspan="6" class="text-center text-muted">Loading history...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- QR PASS SECTION -->
+            <div id="qr" class="tab-content">
+                <div id="qrContent" class="glass-card p-4 mx-auto" style="max-width: 500px;">
+                    <p class="text-muted text-center">Loading QR pass...</p>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    
+
+    <script>
+        const API = 'http://127.0.0.1:5000';
+        const ROLL = localStorage.getItem('roll_number') || '';
+        const STUDENT_NAME = localStorage.getItem('name') || 'Student';
+        const DEPT = localStorage.getItem('department') || '';
+
+        // ── Tab switching ──────────────────────────────────────────────
+        function switchTab(tabId, element) {
+            document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
+            document.getElementById(tabId).classList.add('active');
+            element.classList.add('active');
+            if (tabId === 'status') loadStatus();
+            if (tabId === 'history') loadHistory();
+            if (tabId === 'qr') loadQR();
+            if (tabId === 'dashboard') loadDashboard();
+        }
+
+        // ── Load dashboard stats ───────────────────────────────────────
+        async function loadDashboard() {
+            try {
+                const [reqRes, profileRes] = await Promise.all([
+                    fetch(`${API}/student-requests?roll_number=${ROLL}`),
+                    ROLL ? fetch(`${API}/student/profile?roll_number=${ROLL}`) : Promise.resolve(null)
+                ]);
+                const data = await reqRes.json();
+                const total = data.length;
+                const approved = data.filter(r => r.status === 'Approved').length;
+                const rejected = data.filter(r => r.status === 'Rejected').length;
+                document.getElementById('totalReqs').textContent = total;
+                document.getElementById('approvedReqs').textContent = approved;
+                document.getElementById('rejectedReqs').textContent = rejected;
+
+                // Dynamic attendance circle
+                if (profileRes) {
+                    const profile = await profileRes.json();
+                    const pct = profile.attendance || 75;
+                    document.getElementById('attendancePct').textContent = pct + '%';
+                    document.querySelector('.circle-wrap').style.background =
+                        `conic-gradient(var(--success) ${pct}%, rgba(255,255,255,0.1) 0)`;
+                    const label = document.getElementById('attendanceLabel');
+                    if (pct >= 85) { label.innerHTML = '<i class="fa-solid fa-shield-check"></i> Excellent'; label.style.color = 'var(--success)'; }
+                    else if (pct >= 75) { label.innerHTML = '<i class="fa-solid fa-triangle-exclamation"></i> Warning'; label.style.color = 'var(--warning)'; }
+                    else { label.innerHTML = '<i class="fa-solid fa-circle-xmark"></i> Low'; label.style.color = 'var(--danger)'; }
+                }
+
+                // Latest pending request
+                const pending = data.filter(r => r.status === 'Pending');
+                if (pending.length > 0) {
+                    const latest = pending[pending.length - 1];
+                    document.getElementById('currentStatus').innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Pending Review';
+                    document.getElementById('currentStatusSub').textContent = 'Waiting on approvers';
+                    document.getElementById('nextReturn').textContent = latest.return_time || '--';
+                    document.getElementById('nextReturnSub').innerHTML = '<i class="fa-regular fa-clock text-primary"></i> Expected return';
+                } else if (approved > 0) {
+                    document.getElementById('currentStatus').innerHTML = '<i class="fa-solid fa-check-circle text-success"></i> Approved';
+                    document.getElementById('currentStatusSub').textContent = 'QR pass ready';
+                } else {
+                    document.getElementById('currentStatus').innerHTML = '<i class="fa-solid fa-circle-info"></i> No Active Request';
+                    document.getElementById('currentStatusSub').textContent = 'Submit a new request';
+                }
+            } catch (e) {
+                console.warn('Dashboard load error:', e.message);
+            }
+        }
+
+        // ── Load live status timeline ──────────────────────────────────
+        async function loadStatus() {
+            const container = document.getElementById('statusList');
+            container.innerHTML = '<p class="text-muted">Loading...</p>';
+            try {
+                const res = await fetch(`${API}/student-requests?roll_number=${ROLL}`);
+                const data = await res.json();
+                if (data.length === 0) {
+                    container.innerHTML = '<p class="text-muted">No requests found. Apply for an outpass first.</p>';
+                    return;
+                }
+                container.innerHTML = '';
+                data.slice().reverse().forEach(r => {
+                    const steps = [
+                        { label: 'Applied',  status: 'done' },
+                        { label: 'Mentor',   status: r.mentor_status === 'Approved' ? 'done' : r.mentor_status === 'Rejected' ? 'rejected' : 'active' },
+                        { label: 'Parent',   status: r.parent_status === 'Approved' ? 'done' : r.parent_status === 'Rejected' ? 'rejected' : (r.mentor_status === 'Approved' ? 'active' : '') },
+                        { label: 'HOD',      status: r.hod_status === 'Approved' ? 'done' : r.hod_status === 'Rejected' ? 'rejected' : (r.parent_status === 'Approved' ? 'active' : '') },
+                        { label: 'Dean',     status: r.dean_status === 'Approved' ? 'done' : r.dean_status === 'Rejected' ? 'rejected' : (r.hod_status === 'Approved' ? 'active' : '') },
+                        { label: 'QR Ready', status: r.status === 'Approved' ? 'done' : '' }
+                    ];
+                    const badgeColor = r.status === 'Approved' ? 'bg-success' : r.status === 'Rejected' ? 'bg-danger' : 'bg-warning text-dark';
+                    const stepsHTML = steps.map(s => {
+                        const cls = s.status === 'done' ? 'done' : s.status === 'active' ? 'active' : s.status === 'rejected' ? 'rejected' : '';
+                        const icon = s.status === 'done' ? '<i class="fa-solid fa-check"></i>' : s.status === 'rejected' ? '<i class="fa-solid fa-xmark"></i>' : s.status === 'active' ? '<i class="fa-solid fa-spinner fa-spin"></i>' : s.label[0];
+                        return `<div class="step ${cls}"><div class="step-icon">${icon}</div><span>${s.label}</span></div>`;
+                    }).join('');
+                    container.innerHTML += `
+                    <div class="p-4 mb-3" style="background:rgba(0,0,0,0.2);border-radius:12px;border:1px solid var(--glass-border);">
+                        <h5 class="mb-1">Request #${r.id} <span class="badge ${badgeColor} float-end">${r.status}</span></h5>
+                        <p class="text-muted small mb-3">${r.reason} • Exit: ${r.exit_time || '--'} • Return: ${r.return_time || '--'}</p>
+                        <div class="px-3 pb-2">
+                            <div class="timeline">
+                                <div class="timeline-bar" style="width:${getBarWidth(r)}%;"></div>
+                                ${stepsHTML}
+                            </div>
+                        </div>
+                    </div>`;
+                });
+            } catch (e) {
+                container.innerHTML = '<p class="text-danger">Could not load status. Is Flask running?</p>';
+            }
+        }
+
+        function getBarWidth(r) {
+            if (r.status === 'Approved') return 100;
+            if (r.dean_status === 'Approved') return 90;
+            if (r.hod_status === 'Approved') return 70;
+            if (r.parent_status === 'Approved') return 50;
+            if (r.mentor_status === 'Approved') return 30;
+            return 10;
+        }
+
+        // ── Load history table ─────────────────────────────────────────
+        async function loadHistory() {
+            const tbody = document.getElementById('historyBody');
+            tbody.innerHTML = '<tr><td colspan="6" class="text-center text-muted">Loading...</td></tr>';
+            try {
+                const res = await fetch(`${API}/student-requests?roll_number=${ROLL}`);
+                const data = await res.json();
+                if (data.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="6" class="text-center text-muted">No requests yet.</td></tr>';
+                    return;
+                }
+                tbody.innerHTML = '';
+                data.slice().reverse().forEach(r => {
+                    const sc = r.status === 'Approved' ? 'success' : r.status === 'Rejected' ? 'danger' : 'warning';
+                    const qrBadge = r.status === 'Approved' ? '<span class="badge bg-success">Active</span>' : '<span class="badge bg-secondary">N/A</span>';
+                    tbody.innerHTML += `<tr>
+                        <td>${r.exit_time || '--'}</td>
+                        <td>${r.reason}</td>
+                        <td>${r.exit_time || '--'}</td>
+                        <td>${r.return_time || '--'}</td>
+                        <td>${qrBadge}</td>
+                        <td><span class="badge bg-${sc}">${r.status}</span></td>
+                    </tr>`;
+                });
+            } catch (e) {
+                tbody.innerHTML = '<tr><td colspan="6" class="text-center text-danger">Error loading history.</td></tr>';
+            }
+        }
+
+        // ── Load QR pass ───────────────────────────────────────────────
+        async function loadQR() {
+            const container = document.getElementById('qrContent');
+            try {
+                const res = await fetch(`${API}/student-requests?roll_number=${ROLL}`);
+                const data = await res.json();
+                const approved = data.filter(r => r.status === 'Approved');
+                if (approved.length === 0) {
+                    container.innerHTML = `
+                        <div class="text-center py-5">
+                            <i class="fa-solid fa-qrcode text-muted" style="font-size:5rem;opacity:0.3;"></i>
+                            <h5 class="mt-3 text-muted">No Approved Pass</h5>
+                            <p class="text-muted small">Your QR pass will appear here once the Dean approves your request.</p>
+                        </div>`;
+                    return;
+                }
+                const r = approved[approved.length - 1];
+                const qrSrc = `/static/qr/qr_${r.id}.png`;
+                container.style.border = '1px solid var(--primary)';
+                container.style.boxShadow = '0 0 30px rgba(14,165,233,0.1)';
+                container.innerHTML = `
+                    <div class="d-flex justify-content-between align-items-start mb-4">
+                        <div>
+                            <h4 class="text-primary mb-1">Official Gate Pass</h4>
+                            <div class="badge bg-success bg-opacity-25 text-success border border-success"><i class="fa-solid fa-shield-check"></i> Approved</div>
+                        </div>
+                        <img src="https://ui-avatars.com/api/?name=Elakkiya+S&background=0D8ABC&color=fff" class="rounded border border-secondary" width="60" alt="Student Photo">
+                    </div>
+                    <div class="bg-white p-3 rounded-4 mb-4 mx-auto" style="width:220px;height:220px;display:flex;align-items:center;justify-content:center;">
+                        <img src="${qrSrc}" style="max-width:200px;max-height:200px;" alt="QR Code" onerror="this.outerHTML='<i class=\\'fa-solid fa-qrcode text-dark\\' style=\\'font-size:11rem;\\'></i>'">
+                    </div>
+                    <div class="text-center mb-4">
+                        <div class="fw-bold fs-5 text-uppercase text-primary" style="letter-spacing:2px;">PASS-${r.id}</div>
+                        <p class="small text-muted mb-0 mt-1"><i class="fa-solid fa-lock"></i> Request ID: ${r.id}</p>
+                    </div>
+                    <div class="row g-2 text-center small mb-4 p-3 rounded" style="background:rgba(0,0,0,0.3);">
+                        <div class="col-6 border-end border-secondary">
+                            <div class="text-muted mb-1">Exit Time</div>
+                            <div class="fw-bold text-white">${r.exit_time || '--'}</div>
+                        </div>
+                        <div class="col-6">
+                            <div class="text-muted mb-1">Return By</div>
+                            <div class="fw-bold text-white">${r.return_time || '--'}</div>
+                        </div>
+                    </div>
+                    <div class="d-flex gap-3">
+                        <a href="${qrSrc}" download="qr_pass_${r.id}.png" class="btn btn-outline-primary w-50 py-2"><i class="fa-solid fa-download"></i> Save QR</a>
+                        <button onclick="window.print()" class="btn btn-primary w-50 py-2"><i class="fa-solid fa-print"></i> Print Pass</button>
+                    </div>`;
+            } catch (e) {
+                container.innerHTML = '<p class="text-danger text-center">Error loading QR pass.</p>';
+            }
+        }
+
+        // ── Form reset ─────────────────────────────────────────────────
+        function resetForm() {
+            document.getElementById('reason').value = '';
+            document.getElementById('destination').value = '';
+            document.getElementById('exit_time').value = '';
+            document.getElementById('return_time').value = '';
+            document.getElementById('contact').value = '';
+            const msg = document.getElementById('formMsg');
+            msg.style.display = 'none';
+            const btn = document.getElementById('submitBtn');
+            btn.innerHTML = 'Submit Request';
+            btn.disabled = false;
+            btn.style.background = 'var(--primary)';
+        }
+
+        // ── Submit outpass ─────────────────────────────────────────────
+        async function submitReq(btn) {
+            const reason = document.getElementById('reason').value;
+            const destination = document.getElementById('destination').value;
+            const exit_time = document.getElementById('exit_time').value;
+            const return_time = document.getElementById('return_time').value;
+
+            if (!reason || !destination || !exit_time || !return_time) {
+                showMsg('Please fill in all required fields.', 'danger');
+                return;
+            }
+            if (new Date(return_time) <= new Date(exit_time)) {
+                showMsg('Return time must be after exit time.', 'danger');
+                return;
+            }
+
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Submitting...';
+            btn.disabled = true;
+
+            try {
+                const res = await fetch(`${API}/apply-outpass`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        student_name: STUDENT_NAME,
+                        roll_number: ROLL,
+                        department: DEPT,
+                        reason, destination, exit_time, return_time,
+                        attendance: 92
+                    })
+                });
+                const data = await res.json();
+                if (res.ok) {
+                    btn.innerHTML = '<i class="fa-solid fa-check"></i> Submitted!';
+                    btn.style.background = 'var(--success)';
+                    showMsg(`✅ Request #${data.id} submitted! Awaiting mentor approval.`, 'success');
+                    loadDashboard();
+                } else {
+                    throw new Error(data.message || 'Submission failed');
+                }
+            } catch (err) {
+                btn.innerHTML = 'Submit Request';
+                btn.disabled = false;
+                btn.style.background = 'var(--primary)';
+                showMsg('Error: ' + err.message, 'danger');
+            }
+        }
+
+        function showMsg(text, type) {
+            const msg = document.getElementById('formMsg');
+            msg.style.display = 'block';
+            msg.innerHTML = `<div class="alert alert-${type} mt-2 py-2">${text}</div>`;
+        }
+
+        // ── Init ───────────────────────────────────────────────────────
+        document.addEventListener('DOMContentLoaded', () => {
+            // Wire identity from localStorage into DOM
+            document.getElementById('topNavName').textContent = STUDENT_NAME;
+            document.getElementById('topNavAvatar').src = `https://ui-avatars.com/api/?name=${encodeURIComponent(STUDENT_NAME)}&background=0D8ABC&color=fff`;
+            document.getElementById('welcomeHeading').textContent = `Welcome Back, ${STUDENT_NAME} 👋`;
+            document.getElementById('rollDisplay').textContent = ROLL || '--';
+            document.getElementById('deptDisplay').textContent = DEPT || '--';
+            document.getElementById('formStudentName').value = STUDENT_NAME;
+            document.getElementById('formRollNumber').value = ROLL;
+            loadDashboard();
+            loadNotifications();
+        });
+
+        // ── Dynamic notifications ──────────────────────────────────────
+        async function loadNotifications() {
+            const list = document.getElementById('notifList');
+            if (!ROLL) {
+                list.innerHTML = '<p class="text-muted small">Log in to see notifications.</p>';
+                return;
+            }
+            try {
+                const res = await fetch(`${API}/student-requests?roll_number=${ROLL}`);
+                const data = await res.json();
+                if (data.length === 0) {
+                    list.innerHTML = '<p class="text-muted small">No requests yet.</p>';
+                    return;
+                }
+                list.innerHTML = '';
+                data.slice().reverse().slice(0, 5).forEach(r => {
+                    const color = r.status === 'Approved' ? 'var(--success)' : r.status === 'Rejected' ? 'var(--danger)' : 'var(--warning)';
+                    const icon = r.status === 'Approved' ? 'fa-check-circle' : r.status === 'Rejected' ? 'fa-times-circle' : 'fa-spinner fa-spin';
+                    list.innerHTML += `
+                        <div class="notif-card" style="border-left-color:${color};opacity:1;transform:none;">
+                            <h6 class="mb-1" style="color:${color};"><i class="fa-solid ${icon}"></i> Request #${r.id}</h6>
+                            <p class="small text-muted mb-0">${r.reason} — Status: <strong>${r.status}</strong></p>
+                        </div>`;
+                });
+            } catch (e) {
+                list.innerHTML = '<p class="text-muted small">Could not load notifications.</p>';
+            }
+        }
+    </script>
+</body>
+</html>

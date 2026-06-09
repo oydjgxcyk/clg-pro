@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DOMS | System Portal</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --bg: #0f172a;
+            --surface: rgba(30, 41, 59, 0.6);
+            --border: rgba(255, 255, 255, 0.1);
+            --primary: #3b82f6;
+            --text: #f8fafc;
+            --text-muted: #94a3b8;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', sans-serif;
+        }
+
+        body {
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            font-weight: 800;
+            background: linear-gradient(to right, #60a5fa, #a78bfa);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .header p {
+            color: var(--text-muted);
+            margin-top: 0.5rem;
+        }
+
+        .portal-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.5rem;
+            width: 100%;
+            max-width: 1000px;
+        }
+
+        .portal-card {
+            background: var(--surface);
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 2rem;
+            text-align: center;
+            text-decoration: none;
+            color: var(--text);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 1rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .portal-card:hover {
+            transform: translateY(-10px);
+            border-color: rgba(255, 255, 255, 0.3);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+        }
+
+        .icon-wrapper {
+            width: 64px;
+            height: 64px;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 1.8rem;
+            background: rgba(59, 130, 246, 0.1);
+            color: var(--primary);
+            transition: 0.3s;
+        }
+
+        .portal-card:hover .icon-wrapper {
+            background: var(--primary);
+            color: white;
+            transform: scale(1.1);
+        }
+
+        .card-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+        }
+
+        .card-desc {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+        }
+
+        /* Specific Colors */
+        .c-student .icon-wrapper {
+            color: #22c55e;
+            background: rgba(34, 197, 94, 0.1);
+        }
+
+        .portal-card.c-student:hover .icon-wrapper {
+            background: #22c55e;
+            color: #fff;
+        }
+
+        .c-mentor .icon-wrapper {
+            color: #3b82f6;
+            background: rgba(59, 130, 246, 0.1);
+        }
+
+        .portal-card.c-mentor:hover .icon-wrapper {
+            background: #3b82f6;
+            color: #fff;
+        }
+
+        .c-parent .icon-wrapper {
+            color: #a855f7;
+            background: rgba(168, 85, 247, 0.1);
+        }
+
+        .portal-card.c-parent:hover .icon-wrapper {
+            background: #a855f7;
+            color: #fff;
+        }
+
+        .c-hod .icon-wrapper {
+            color: #f59e0b;
+            background: rgba(245, 158, 11, 0.1);
+        }
+
+        .portal-card.c-hod:hover .icon-wrapper {
+            background: #f59e0b;
+            color: #fff;
+        }
+
+        .c-dean .icon-wrapper {
+            color: #eab308;
+            background: rgba(234, 179, 8, 0.1);
+        }
+
+        .portal-card.c-dean:hover .icon-wrapper {
+            background: #eab308;
+            color: #fff;
+        }
+
+        .c-security .icon-wrapper {
+            color: #ef4444;
+            background: rgba(239, 68, 68, 0.1);
+        }
+
+        .portal-card.c-security:hover .icon-wrapper {
+            background: #ef4444;
+            color: #fff;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="header">
+        <h1><i class="fa-solid fa-shield-halved"></i> DOMS Central Portal</h1>
+        <p>Digital Outpass Management System - Select your role dashboard</p>
+    </div>
+
+    <div class="portal-grid">
+        <!-- Changed to Flask routes -->
+        <a href="/student" class="portal-card c-student">
+            <div class="icon-wrapper"><i class="fa-solid fa-user-graduate"></i></div>
+            <div class="card-title">Student Dashboard</div>
+            <div class="card-desc">Apply for outpass and check live status</div>
+        </a>
+
+        <a href="/mentor" class="portal-card c-mentor">
+            <div class="icon-wrapper"><i class="fa-solid fa-chalkboard-user"></i></div>
+            <div class="card-title">Mentor Dashboard</div>
+            <div class="card-desc">Review assigned students and verify</div>
+        </a>
+
+        <a href="/parent" class="portal-card c-parent">
+            <div class="icon-wrapper"><i class="fa-solid fa-hands-holding-child"></i></div>
+            <div class="card-title">Parent Dashboard</div>
+            <div class="card-desc">Approve requests and track ward safety</div>
+        </a>
+
+        <a href="/hod" class="portal-card c-hod">
+            <div class="icon-wrapper"><i class="fa-solid fa-building-user"></i></div>
+            <div class="card-title">HOD Dashboard</div>
+            <div class="card-desc">Department-level analytics and approval</div>
+        </a>
+
+        <a href="/dean" class="portal-card c-dean">
+            <div class="icon-wrapper"><i class="fa-solid fa-user-tie"></i></div>
+            <div class="card-title">Dean Dashboard</div>
+            <div class="card-desc">Final authority and campus monitoring</div>
+        </a>
+
+        <a href="/security" class="portal-card c-security">
+            <div class="icon-wrapper"><i class="fa-solid fa-camera"></i></div>
+            <div class="card-title">Security Scanner</div>
+            <div class="card-desc">QR scanner and live exit/entry logs</div>
+        </a>
+    </div>
+</body>
+
+</html>

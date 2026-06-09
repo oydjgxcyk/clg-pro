@@ -1,0 +1,472 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DOMS | Parent Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        :root {
+            --bg-color: #0f172a;
+            --surface: rgba(30, 41, 59, 0.7);
+            --border: rgba(255, 255, 255, 0.1);
+            --primary: #8b5cf6;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', sans-serif;
+        }
+
+        body {
+            background: var(--bg-color);
+            color: var(--text-main);
+            padding: 2rem;
+            display: flex;
+            justify-content: center;
+        }
+
+        .container {
+            max-width: 600px;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        .back-nav {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: var(--text-muted);
+            text-decoration: none;
+            font-size: 0.9rem;
+            transition: 0.2s;
+        }
+
+        .back-nav:hover {
+            color: white;
+        }
+
+        .welcome-card {
+            background: var(--surface);
+            backdrop-filter: blur(12px);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        }
+
+        .student-photo {
+            width: 70px;
+            height: 70px;
+            border-radius: 50%;
+            border: 2px solid var(--primary);
+            background: #334155;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+        }
+
+        .status-card {
+            text-align: center;
+            padding: 2rem;
+            border-radius: 20px;
+            background: rgba(245, 158, 11, 0.1);
+            border: 1px solid rgba(245, 158, 11, 0.3);
+            animation: pulse-yellow 2s infinite;
+        }
+
+        .timeline {
+            background: var(--surface);
+            padding: 1.5rem;
+            border-radius: 20px;
+            border: 1px solid var(--border);
+        }
+
+        .steps {
+            display: flex;
+            justify-content: space-between;
+            position: relative;
+            margin-top: 1rem;
+        }
+
+        .steps::before {
+            content: '';
+            position: absolute;
+            top: 15px;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            background: var(--border);
+            z-index: 1;
+        }
+
+        .steps::after {
+            content: '';
+            position: absolute;
+            top: 15px;
+            left: 0;
+            width: 50%;
+            height: 2px;
+            background: var(--primary);
+            z-index: 2;
+        }
+
+        .step {
+            position: relative;
+            z-index: 3;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .step-circle {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: var(--surface);
+            border: 2px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8rem;
+        }
+
+        .step.active .step-circle {
+            background: var(--primary);
+            border-color: var(--primary);
+            color: white;
+            box-shadow: 0 0 10px var(--primary);
+        }
+
+        .step.completed .step-circle {
+            background: var(--success);
+            border-color: var(--success);
+            color: white;
+        }
+
+        .details-card {
+            background: var(--surface);
+            padding: 1.5rem;
+            border-radius: 20px;
+            border: 1px solid var(--border);
+        }
+
+        .detail-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 0.8rem;
+            font-size: 0.9rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            padding-bottom: 0.5rem;
+        }
+
+        .detail-row:last-child {
+            border: none;
+            margin: 0;
+            padding: 0;
+        }
+
+        .attendance-card {
+            background: var(--surface);
+            padding: 1.5rem;
+            border-radius: 20px;
+            border: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .progress-circle {
+            position: relative;
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: conic-gradient(var(--success) 92%, #334155 0%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .progress-circle::after {
+            content: '';
+            position: absolute;
+            width: 66px;
+            height: 66px;
+            background: var(--bg-color);
+            border-radius: 50%;
+        }
+
+        .circle-text {
+            position: absolute;
+            z-index: 10;
+            font-weight: 700;
+            font-size: 1.2rem;
+            color: var(--success);
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .btn {
+            flex: 1;
+            padding: 1rem;
+            border: none;
+            border-radius: 12px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            justify-content: center;
+            gap: 0.5rem;
+            transition: 0.2s;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn-approve {
+            background: var(--success);
+            color: white;
+        }
+
+        .btn-reject {
+            background: transparent;
+            border: 2px solid var(--danger);
+            color: var(--danger);
+        }
+
+        @keyframes pulse-yellow {
+            0% {
+                box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.4);
+            }
+
+            70% {
+                box-shadow: 0 0 0 15px rgba(245, 158, 11, 0);
+            }
+
+            100% {
+                box-shadow: 0 0 0 0 rgba(245, 158, 11, 0);
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <a href="/" class="back-nav"><i class="fa-solid fa-arrow-left"></i> Back to Portal</a>
+
+        <div class="welcome-card">
+            <div class="student-photo"><i class="fa-regular fa-user"></i></div>
+            <div>
+                <h1 id="welcomeHeading" style="font-size: 1.25rem; font-weight: 600;">Welcome, Parent 👋</h1>
+                <p id="welcomeSub" style="color: var(--text-muted); font-size: 0.9rem;">Loading student info...</p>
+            </div>
+        </div>
+
+        <div class="status-card" id="statusCard">
+            <i class="fa-regular fa-clock" style="font-size: 3rem; color: var(--warning); margin-bottom: 1rem;"></i>
+            <div style="font-size: 1.5rem; font-weight: 600; color: var(--warning);">Pending Your Approval</div>
+        </div>
+
+        <div class="timeline">
+            <h3 style="font-size: 1rem; font-weight: 600;">Approval Flow</h3>
+            <div id="timelineSteps" class="steps"></div>
+        </div>
+
+        <div class="details-card">
+            <div class="detail-row"><span style="color: var(--text-muted);">Reason</span><span id="detailReason">—</span></div>
+            <div class="detail-row"><span style="color: var(--text-muted);">Destination</span><span id="detailDest">—</span></div>
+            <div class="detail-row"><span style="color: var(--text-muted);">Exit</span><span id="detailExit">—</span></div>
+        </div>
+
+        <div class="attendance-card">
+            <div>
+                <h3 style="font-size: 1rem; margin-bottom: 0.5rem;">Attendance Record</h3>
+                <p id="attLabel" style="color: var(--success); font-size: 0.85rem;"><i class="fa-solid fa-shield-check"></i> Good Standing</p>
+            </div>
+            <div class="progress-circle" id="attCircle" style="background: conic-gradient(#334155 0%, #334155 0%);">
+                <span class="circle-text" id="attPct">—</span>
+            </div>
+        </div>
+
+        <div class="btn-group" id="actionBtns">
+            <button class="btn btn-reject" onclick="confirmAction(false)"><i class="fa-solid fa-xmark"></i>
+                Reject</button>
+            <button class="btn btn-approve" onclick="confirmAction(true)"><i class="fa-solid fa-check"></i>
+                Approve</button>
+        </div>
+        <div id="nextBtnArea" style="display:none;margin-top:1rem;">
+            <button onclick="loadPending()" style="width:100%;padding:0.8rem;background:rgba(255,255,255,0.05);border:1px solid var(--border);border-radius:12px;color:var(--text-main);cursor:pointer;font-size:0.9rem;">
+                <i class="fa-solid fa-arrow-right"></i> Next Pending Request
+            </button>
+        </div>
+    </div>
+
+    <script>
+        const API = 'http://127.0.0.1:5000';
+        let currentRequestId = null;
+        let pendingQueue = [];
+        let queueIndex = 0;
+
+        async function loadPending() {
+            try {
+                const res = await fetch(`${API}/parent/pending`);
+                pendingQueue = await res.json();
+                queueIndex = 0;
+                showRequest();
+            } catch (e) {
+                document.getElementById('statusCard').innerHTML =
+                    '<i class="fa-solid fa-exclamation-triangle" style="font-size:3rem;color:var(--danger);margin-bottom:1rem;"></i>' +
+                    '<div style="font-size:1.2rem;font-weight:600;color:var(--danger);">Cannot connect to server</div>' +
+                    '<p style="color:var(--text-muted);font-size:0.85rem;margin-top:0.5rem;">Make sure Flask is running on port 5000</p>';
+                document.getElementById('actionBtns').style.display = 'none';
+            }
+        }
+
+        function showRequest() {
+            const card = document.getElementById('statusCard');
+            const btns = document.getElementById('actionBtns');
+            const nextArea = document.getElementById('nextBtnArea');
+
+            card.style.animation = 'pulse-yellow 2s infinite';
+            card.style.background = 'rgba(245, 158, 11, 0.1)';
+            card.style.borderColor = 'rgba(245, 158, 11, 0.3)';
+            btns.style.opacity = '1';
+            btns.style.pointerEvents = 'auto';
+            btns.style.display = 'flex';
+            nextArea.style.display = 'none';
+
+            if (pendingQueue.length === 0) {
+                card.style.animation = 'none';
+                card.style.background = 'rgba(16, 185, 129, 0.1)';
+                card.style.borderColor = 'rgba(16, 185, 129, 0.3)';
+                card.innerHTML = '<i class="fa-solid fa-check-circle" style="font-size:3rem;color:var(--success);margin-bottom:1rem;"></i>' +
+                    '<div style="font-size:1.5rem;font-weight:600;color:var(--success);">All Requests Reviewed</div>' +
+                    '<p style="color:var(--text-muted);font-size:0.85rem;margin-top:0.5rem;">No more pending requests</p>';
+                btns.style.display = 'none';
+                return;
+            }
+
+            const r = pendingQueue[queueIndex] || pendingQueue[0];
+            currentRequestId = r.id;
+
+            // Dynamic welcome heading
+            document.getElementById('welcomeHeading').textContent = `Welcome, Parent of ${r.student_name} 👋`;
+            document.getElementById('welcomeSub').textContent = `${r.department || 'N/A'} Dept`;
+
+            card.innerHTML = `
+                <i class="fa-regular fa-clock" style="font-size:3rem;color:var(--warning);margin-bottom:1rem;"></i>
+                <div style="font-size:1.5rem;font-weight:600;color:var(--warning);">Pending Your Approval</div>
+                <p style="color:var(--text-muted);font-size:0.85rem;margin-top:0.5rem;">${pendingQueue.length} request(s) waiting</p>`;
+
+            // Dynamic details
+            document.getElementById('detailReason').textContent = r.reason || '—';
+            document.getElementById('detailDest').textContent = r.destination || '—';
+            document.getElementById('detailExit').textContent = r.exit_time || '—';
+
+            // Dynamic attendance circle
+            const pct = r.attendance || 0;
+            const color = pct >= 85 ? 'var(--success)' : pct >= 75 ? 'var(--warning)' : 'var(--danger)';
+            document.getElementById('attCircle').style.background = `conic-gradient(${color} ${pct}%, #334155 0%)`;
+            document.getElementById('attPct').textContent = pct + '%';
+            document.getElementById('attPct').style.color = color;
+            document.getElementById('attLabel').innerHTML = pct >= 85
+                ? '<i class="fa-solid fa-shield-check"></i> Good Standing'
+                : pct >= 75
+                    ? '<i class="fa-solid fa-triangle-exclamation"></i> Warning'
+                    : '<i class="fa-solid fa-circle-xmark"></i> Low Attendance';
+            document.getElementById('attLabel').style.color = color;
+
+            // Dynamic timeline
+            buildTimeline(r);
+        }
+
+        function buildTimeline(r) {
+            const stages = [
+                { label: 'Applied', status: 'completed' },
+                { label: 'Mentor',  status: r.mentor_status === 'Approved' ? 'completed' : r.mentor_status === 'Rejected' ? 'rejected' : 'active' },
+                { label: 'Parent',  status: r.parent_status === 'Approved' ? 'completed' : r.parent_status === 'Rejected' ? 'rejected' : (r.mentor_status === 'Approved' ? 'active' : 'pending') },
+                { label: 'HOD',     status: r.hod_status === 'Approved' ? 'completed' : r.hod_status === 'Rejected' ? 'rejected' : (r.parent_status === 'Approved' ? 'active' : 'pending') },
+                { label: 'Dean',    status: r.dean_status === 'Approved' ? 'completed' : r.dean_status === 'Rejected' ? 'rejected' : (r.hod_status === 'Approved' ? 'active' : 'pending') }
+            ];
+            const container = document.getElementById('timelineSteps');
+            container.innerHTML = stages.map(s => {
+                let cls = s.status;
+                let icon = s.label[0];
+                if (s.status === 'completed') icon = '<i class="fa-solid fa-check"></i>';
+                else if (s.status === 'active') icon = '<i class="fa-solid fa-spinner fa-spin"></i>';
+                else if (s.status === 'rejected') icon = '<i class="fa-solid fa-xmark"></i>';
+                return `<div class="step ${cls}">
+                    <div class="step-circle">${icon}</div>
+                    <span style="font-size:0.75rem;color:var(--text-muted);">${s.label}</span>
+                </div>`;
+            }).join('');
+        }
+
+        async function confirmAction(isApprove) {
+            if (!currentRequestId) return;
+
+            const card = document.getElementById('statusCard');
+            const btns = document.getElementById('actionBtns');
+            const nextArea = document.getElementById('nextBtnArea');
+            card.style.animation = 'none';
+            btns.style.opacity = '0.5';
+            btns.style.pointerEvents = 'none';
+
+            const url = isApprove
+                ? `${API}/parent/approve/${currentRequestId}`
+                : `${API}/parent/reject/${currentRequestId}`;
+
+            try {
+                await fetch(url, { method: 'PUT' });
+
+                if (isApprove) {
+                    card.style.background = 'rgba(16, 185, 129, 0.1)';
+                    card.style.borderColor = 'rgba(16, 185, 129, 0.3)';
+                    card.innerHTML = '<i class="fa-solid fa-check-circle" style="font-size:3rem;color:var(--success);margin-bottom:1rem;"></i>' +
+                        '<div style="font-size:1.5rem;font-weight:600;color:var(--success);">Approved Successfully</div>';
+                } else {
+                    card.style.background = 'rgba(239, 68, 68, 0.1)';
+                    card.style.borderColor = 'rgba(239, 68, 68, 0.3)';
+                    card.innerHTML = '<i class="fa-solid fa-times-circle" style="font-size:3rem;color:var(--danger);margin-bottom:1rem;"></i>' +
+                        '<div style="font-size:1.5rem;font-weight:600;color:var(--danger);">Request Rejected</div>';
+                }
+
+                // Remove processed request from queue
+                pendingQueue = pendingQueue.filter(r => r.id !== currentRequestId);
+
+                if (pendingQueue.length > 0) {
+                    nextArea.style.display = 'block';
+                } else {
+                    setTimeout(loadPending, 1500);
+                }
+            } catch (e) {
+                btns.style.opacity = '1';
+                btns.style.pointerEvents = 'auto';
+                alert('Error: ' + e.message);
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', loadPending);
+    </script>
+</body>
+
+</html>

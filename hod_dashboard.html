@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DOMS | HOD Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --bg-color: #0f172a;
+            --surface: rgba(30, 41, 59, 0.7);
+            --surface-solid: #1e293b;
+            --primary: #f59e0b;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --border: rgba(255, 255, 255, 0.1);
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
+        body { background: var(--bg-color); color: var(--text-main); min-height: 100vh; display: flex; overflow: hidden; }
+        .sidebar {
+            width: 260px; background: var(--surface-solid); border-right: 1px solid var(--border);
+            display: flex; flex-direction: column; padding: 1.5rem; height: 100vh;
+        }
+        .brand {
+            font-size: 1.4rem; font-weight: 700; color: var(--primary);
+            margin-bottom: 2rem; display: flex; align-items: center; gap: 0.5rem;
+        }
+        .nav-item {
+            padding: 0.75rem 1rem; color: var(--text-muted); text-decoration: none;
+            border-radius: 8px; margin-bottom: 0.5rem; display: flex; align-items: center;
+            gap: 0.75rem; transition: 0.2s;
+        }
+        .nav-item:hover { background: rgba(245, 158, 11, 0.1); color: var(--primary); }
+        .main-content { flex: 1; padding: 2rem; overflow-y: auto; height: 100vh; }
+        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; }
+        .profile-avatar {
+            width: 48px; height: 48px; border-radius: 50%;
+            background: linear-gradient(135deg, #f59e0b, #ef4444);
+            display: flex; align-items: center; justify-content: center;
+            font-weight: 600; font-size: 1.2rem;
+        }
+        .analytics-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-bottom: 2rem; }
+        .stat-card {
+            background: var(--surface); backdrop-filter: blur(10px);
+            border: 1px solid var(--border); border-radius: 12px;
+            padding: 1.5rem; display: flex; align-items: center; gap: 1rem;
+        }
+        .stat-icon { width: 48px; height: 48px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; }
+        .requests-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(380px, 1fr)); gap: 1.5rem; }
+        .request-card {
+            background: var(--surface); backdrop-filter: blur(12px);
+            border: 1px solid var(--border); border-radius: 16px;
+            padding: 1.5rem; transition: all 0.3s ease;
+        }
+        .request-card:hover { transform: translateY(-5px); box-shadow: 0 10px 25px rgba(0,0,0,0.3); }
+        .card-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1rem; }
+        .details-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; font-size: 0.85rem; margin-bottom: 1.5rem; }
+        .detail-label { color: var(--text-muted); font-size: 0.8rem; }
+        .actions { display: flex; gap: 1rem; }
+        .btn {
+            flex: 1; padding: 0.7rem; border: none; border-radius: 8px;
+            font-weight: 600; cursor: pointer; transition: 0.2s;
+            display: flex; justify-content: center; gap: 0.5rem;
+        }
+        .btn-approve { background: var(--primary); color: #000; }
+        .btn-reject { background: transparent; border: 1px solid var(--border); color: var(--text-main); }
+        .btn-reject:hover { background: rgba(239,68,68,0.1); color: var(--danger); }
+        #statusMsg { padding: 1rem; border-radius: 8px; margin-bottom: 1rem; display: none; }
+    </style>
+</head>
+<body>
+    <aside class="sidebar">
+        <div class="brand"><i class="fa-solid fa-building-user"></i> DOMS HOD</div>
+        <a href="/" class="nav-item"><i class="fa-solid fa-arrow-left"></i> Back to Portal</a>
+        <div style="margin-top: auto; padding-bottom: 1rem;">
+            <p style="font-size:0.8rem;color:var(--text-muted);">Department: Computer Science</p>
+        </div>
+    </aside>
+
+    <main class="main-content">
+        <header class="header">
+            <div>
+                <h1 style="font-size:1.5rem;font-weight:600;">HOD Dashboard</h1>
+                <p style="color:var(--text-muted);font-size:0.9rem;">Department-level outpass approvals</p>
+            </div>
+            <div style="display:flex;align-items:center;gap:1rem;">
+                <div class="profile-avatar">HD</div>
+                <div style="line-height:1.2;">
+                    <h2 style="font-size:1rem;">Dr. Head of Dept</h2>
+                    <p style="font-size:0.8rem;color:var(--text-muted);">HOD • Computer Science</p>
+                </div>
+            </div>
+        </header>
+
+        <div class="analytics-grid">
+            <div class="stat-card" style="border-left:4px solid var(--warning);">
+                <div style="background:rgba(245,158,11,0.1);color:var(--warning);" class="stat-icon"><i class="fa-solid fa-spinner"></i></div>
+                <div><h3 id="pendingCount" style="font-size:1.5rem;">0</h3><p style="font-size:0.8rem;color:var(--text-muted);">Pending</p></div>
+            </div>
+            <div class="stat-card" style="border-left:4px solid var(--success);">
+                <div style="background:rgba(16,185,129,0.1);color:var(--success);" class="stat-icon"><i class="fa-solid fa-check-double"></i></div>
+                <div><h3 id="approvedCount" style="font-size:1.5rem;">0</h3><p style="font-size:0.8rem;color:var(--text-muted);">Approved</p></div>
+            </div>
+            <div class="stat-card" style="border-left:4px solid var(--danger);">
+                <div style="background:rgba(239,68,68,0.1);color:var(--danger);" class="stat-icon"><i class="fa-solid fa-xmark"></i></div>
+                <div><h3 id="rejectedCount" style="font-size:1.5rem;">0</h3><p style="font-size:0.8rem;color:var(--text-muted);">Rejected</p></div>
+            </div>
+        </div>
+
+        <div id="statusMsg"></div>
+        <h2 style="font-size:1.25rem;margin-bottom:1rem;font-weight:600;">Pending Approvals</h2>
+        <div class="requests-grid" id="requestsGrid">
+            <p style="color:var(--text-muted);">Loading...</p>
+        </div>
+    </main>
+
+    <script>
+        const API = 'http://127.0.0.1:5000';
+
+        async function loadPending() {
+            try {
+                const [pendingRes, analyticsRes] = await Promise.all([
+                    fetch(`${API}/hod/pending`),
+                    fetch(`${API}/analytics?department=${encodeURIComponent(hodDept)}`)
+                ]);
+                const pending = await pendingRes.json();
+                const analytics = await analyticsRes.json();
+
+                document.getElementById('pendingCount').textContent = analytics.pending_requests;
+                document.getElementById('approvedCount').textContent = analytics.approved_requests;
+                document.getElementById('rejectedCount').textContent = analytics.rejected_requests;
+
+                const grid = document.getElementById('requestsGrid');
+                grid.innerHTML = '';
+
+                if (pending.length === 0) {
+                    grid.innerHTML = '<p style="color:var(--text-muted);">No pending requests for HOD approval.</p>';
+                    return;
+                }
+
+                pending.forEach(r => {
+                    grid.innerHTML += `
+                    <div class="request-card" id="card-${r.id}">
+                        <div class="card-top">
+                            <div>
+                                <h3 style="font-size:1.1rem;">${r.student_name}</h3>
+                                <p style="font-size:0.8rem;color:var(--text-muted);">${r.roll_number} • ${r.department}</p>
+                            </div>
+                            <span style="font-size:0.75rem;padding:4px 8px;border-radius:20px;background:rgba(245,158,11,0.1);color:var(--warning);border:1px solid rgba(245,158,11,0.2);">
+                                Att: ${r.attendance}%
+                            </span>
+                        </div>
+                        <div class="details-grid">
+                            <div><span class="detail-label">Reason</span><p>${r.reason}</p></div>
+                            <div><span class="detail-label">Destination</span><p>${r.destination}</p></div>
+                            <div><span class="detail-label">Exit</span><p>${r.exit_time}</p></div>
+                            <div><span class="detail-label">Return</span><p>${r.return_time}</p></div>
+                        </div>
+                        <div class="actions">
+                            <button class="btn btn-reject" onclick="rejectReq(${r.id}, this)"><i class="fa-solid fa-xmark"></i> Reject</button>
+                            <button class="btn btn-approve" onclick="approveReq(${r.id}, this)"><i class="fa-solid fa-check"></i> Approve</button>
+                        </div>
+                    </div>`;
+                });
+            } catch (e) {
+                document.getElementById('requestsGrid').innerHTML =
+                    '<p style="color:var(--danger);">Could not connect to server. Make sure Flask is running.</p>';
+            }
+        }
+
+        async function approveReq(id, btn) {
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>';
+            btn.disabled = true;
+            try {
+                await fetch(`${API}/hod/approve/${id}`, { method: 'PUT' });
+                const card = document.getElementById(`card-${id}`);
+                card.style.opacity = '0'; card.style.transition = '0.3s';
+                setTimeout(() => { card.remove(); loadPending(); }, 300);
+            } catch (e) { btn.innerHTML = 'Approve'; btn.disabled = false; alert('Error: ' + e.message); }
+        }
+
+        async function rejectReq(id, btn) {
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>';
+            btn.disabled = true;
+            try {
+                await fetch(`${API}/hod/reject/${id}`, { method: 'PUT' });
+                const card = document.getElementById(`card-${id}`);
+                card.style.opacity = '0'; card.style.transition = '0.3s';
+                setTimeout(() => { card.remove(); loadPending(); }, 300);
+            } catch (e) { btn.innerHTML = 'Reject'; btn.disabled = false; alert('Error: ' + e.message); }
+        }
+
+        let hodDept = 'Computer Science';
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const name = localStorage.getItem('name') || 'HOD';
+            hodDept = localStorage.getItem('department') || 'Computer Science';
+
+            const initials = name.split(' ').filter(w => w.length > 0).map(w => w[0].toUpperCase()).join('').slice(0, 2) || 'HD';
+            document.querySelector('.profile-avatar').textContent = initials;
+            document.querySelector('.profile-avatar').nextElementSibling.querySelector('h2').textContent = name;
+            document.querySelector('.profile-avatar').nextElementSibling.querySelector('p').textContent = 'HOD • ' + hodDept;
+            document.querySelector('.sidebar p').textContent = 'Department: ' + hodDept;
+
+            loadPending();
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DOMS | Dean Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            --bg-color: #050505; --surface: #111111; --border: #333333;
+            --primary: #facc15; --success: #22c55e; --danger: #ef4444;
+            --warning: #f59e0b; --text-main: #f8fafc; --text-muted: #a3a3a3;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
+        body { background: var(--bg-color); color: var(--text-main); padding: 2rem; }
+        .header {
+            display: flex; justify-content: space-between; align-items: center;
+            border-bottom: 1px solid var(--border); padding-bottom: 1rem; margin-bottom: 2rem;
+        }
+        .brand { font-size: 1.5rem; font-weight: 700; color: var(--primary); display: flex; align-items: center; gap: 0.5rem; }
+        .grid-layout { display: grid; grid-template-columns: 2fr 1fr; gap: 2rem; }
+        .card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 1.5rem; margin-bottom: 1.5rem; }
+        .card-title { font-size: 1.1rem; margin-bottom: 1rem; font-weight: 600; display: flex; align-items: center; justify-content: space-between; }
+        .approval-item { border: 1px solid var(--border); border-radius: 8px; padding: 1rem; margin-bottom: 1rem; background: rgba(255,255,255,0.02); }
+        .chain { display: flex; gap: 0.5rem; margin-top: 0.5rem; flex-wrap: wrap; }
+        .node { font-size: 0.75rem; background: rgba(34,197,94,0.1); color: var(--success); padding: 2px 6px; border-radius: 4px; border: 1px solid rgba(34,197,94,0.2); }
+        .btn-grant { background: var(--primary); color: #000; font-weight: 600; border: none; padding: 0.5rem 1rem; border-radius: 6px; cursor: pointer; transition: 0.2s; }
+        .btn-grant:hover { opacity: 0.85; }
+        .btn-grant:disabled { opacity: 0.5; cursor: not-allowed; }
+        .monitor-list { display: flex; flex-direction: column; gap: 0.5rem; }
+        .monitor-item { display: flex; justify-content: space-between; font-size: 0.85rem; padding: 0.5rem; border-bottom: 1px solid var(--border); }
+        .live-dot { width: 8px; height: 8px; background: var(--success); border-radius: 50%; display: inline-block; animation: blink 1s infinite; }
+        @keyframes blink { 50% { opacity: 0; } }
+        .analytics-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; margin-bottom: 2rem; }
+        .stat-mini { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 1rem; text-align: center; }
+        .qr-img { max-width: 150px; border-radius: 8px; margin-top: 0.5rem; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="brand"><i class="fa-solid fa-user-tie"></i> DOMS | Dean Central</div>
+        <div style="display:flex;align-items:center;gap:1rem;">
+            <span style="color:var(--text-muted);"><i class="fa-solid fa-user-tie"></i> <span id="deanName">Dean</span></span>
+            <a href="/" style="background:var(--surface);color:white;border:1px solid var(--border);padding:0.4rem 0.8rem;border-radius:6px;text-decoration:none;font-size:0.85rem;">
+                <i class="fa-solid fa-arrow-left"></i> Portal
+            </a>
+        </div>
+    </div>
+
+    <div class="analytics-row">
+        <div class="stat-mini"><div style="color:var(--text-muted);font-size:0.8rem;">Total Requests</div><div id="totalReq" style="font-size:1.8rem;font-weight:700;">0</div></div>
+        <div class="stat-mini"><div style="color:var(--text-muted);font-size:0.8rem;">Approved</div><div id="approvedReq" style="font-size:1.8rem;font-weight:700;color:var(--success);">0</div></div>
+        <div class="stat-mini"><div style="color:var(--text-muted);font-size:0.8rem;">Rejected</div><div id="rejectedReq" style="font-size:1.8rem;font-weight:700;color:var(--danger);">0</div></div>
+        <div class="stat-mini"><div style="color:var(--text-muted);font-size:0.8rem;">Pending</div><div id="pendingReq" style="font-size:1.8rem;font-weight:700;color:var(--warning);">0</div></div>
+    </div>
+
+    <div class="grid-layout">
+        <div>
+            <div class="card">
+                <div class="card-title">
+                    Final Sanction Panel
+                    <span id="pendingBadge" class="node" style="background:var(--primary);color:#000;">0 Pending</span>
+                </div>
+                <div id="approvalList"><p style="color:var(--text-muted);">Loading...</p></div>
+            </div>
+
+            <div class="card">
+                <div class="card-title">Analytics Overview</div>
+                <canvas id="analyticsChart" height="120"></canvas>
+            </div>
+        </div>
+
+        <div>
+            <div class="card">
+                <div class="card-title">Live Campus Monitor <span class="live-dot"></span></div>
+                <div class="monitor-list" id="monitorList">
+                    <p style="color:var(--text-muted);font-size:0.85rem;">Loading...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API = 'http://127.0.0.1:5000';
+
+        async function loadDashboard() {
+            try {
+                const [pendingRes, analyticsRes, allRes] = await Promise.all([
+                    fetch(`${API}/dean/pending`),
+                    fetch(`${API}/analytics`),
+                    fetch(`${API}/student-requests`)
+                ]);
+                const pending = await pendingRes.json();
+                const analytics = await analyticsRes.json();
+                const allRequests = await allRes.json();
+
+                // Update stats
+                document.getElementById('totalReq').textContent = analytics.total_requests;
+                document.getElementById('approvedReq').textContent = analytics.approved_requests;
+                document.getElementById('rejectedReq').textContent = analytics.rejected_requests;
+                document.getElementById('pendingReq').textContent = analytics.pending_requests;
+                document.getElementById('pendingBadge').textContent = pending.length + ' Pending';
+
+                // Approval list
+                const list = document.getElementById('approvalList');
+                list.innerHTML = '';
+                if (pending.length === 0) {
+                    list.innerHTML = '<p style="color:var(--text-muted);">No requests awaiting final approval.</p>';
+                } else {
+                    pending.forEach(r => {
+                        list.innerHTML += `
+                        <div class="approval-item" id="item-${r.id}">
+                            <div style="display:flex;justify-content:space-between;align-items:flex-start;">
+                                <div>
+                                    <strong>${r.student_name}</strong> (${r.department})
+                                    <p style="font-size:0.85rem;color:var(--text-muted);margin-top:0.2rem;">
+                                        ${r.reason} | ${r.destination}
+                                    </p>
+                                </div>
+                                <button class="btn-grant" id="btn-${r.id}" onclick="grantApproval(${r.id})">
+                                    <i class="fa-solid fa-qrcode"></i> Grant & Generate QR
+                                </button>
+                                <button onclick="rejectApproval(${r.id})" style="background:transparent;border:1px solid #ef4444;color:#ef4444;font-weight:600;border-radius:6px;padding:0.5rem 1rem;cursor:pointer;margin-left:0.5rem;">
+                                    <i class="fa-solid fa-xmark"></i> Reject
+                                </button>
+                            </div>
+                            <div class="chain">
+                                <span class="node"><i class="fa-solid fa-check"></i> Mentor: ${r.mentor_status}</span>
+                                <span class="node"><i class="fa-solid fa-check"></i> Parent: ${r.parent_status}</span>
+                                <span class="node"><i class="fa-solid fa-check"></i> HOD: ${r.hod_status}</span>
+                                <span class="node" style="background:rgba(255,255,255,0.1);color:white;">Att: ${r.attendance}%</span>
+                            </div>
+                            <div id="qr-${r.id}"></div>
+                        </div>`;
+                    });
+                }
+
+                // Live monitor
+                const monitor = document.getElementById('monitorList');
+                monitor.innerHTML = '';
+                const recent = allRequests.filter(r => r.status === 'Approved').reverse();
+                if (recent.length === 0) {
+                    monitor.innerHTML = '<p style="color:var(--text-muted);font-size:0.85rem;">No activity yet.</p>';
+                } else {
+                    recent.forEach(r => {
+                        const color = r.status === 'Approved' ? 'var(--success)' : r.status === 'Rejected' ? 'var(--danger)' : 'var(--warning)';
+                        monitor.innerHTML += `
+                        <div class="monitor-item">
+                            <span style="color:${color};">${r.student_name}</span>
+                            <span style="color:var(--text-muted);font-size:0.8rem;">${r.status}</span>
+                        </div>`;
+                    });
+                }
+
+                // Chart
+                renderChart(analytics);
+            } catch (e) {
+                document.getElementById('approvalList').innerHTML =
+                    '<p style="color:var(--danger);">Cannot connect to server. Make sure Flask is running.</p>';
+            }
+        }
+
+        async function grantApproval(id) {
+            const btn = document.getElementById(`btn-${id}`);
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Processing...';
+            btn.disabled = true;
+            try {
+                const res = await fetch(`${API}/dean/approve/${id}`, { method: 'PUT' });
+                const data = await res.json();
+                btn.innerHTML = '<i class="fa-solid fa-check"></i> QR Generated!';
+                btn.style.background = 'var(--success)';
+
+                if (data.qr_file) {
+                    document.getElementById(`qr-${id}`).innerHTML =
+                        `<p style="font-size:0.8rem;color:var(--text-muted);margin-top:0.5rem;">QR Code:</p>
+                         <img src="${data.qr_file}" class="qr-img" alt="QR Code">`;
+                }
+                setTimeout(loadDashboard, 2000);
+            } catch (e) {
+                btn.innerHTML = 'Grant & Generate QR';
+                btn.disabled = false;
+                alert('Error: ' + e.message);
+            }
+        }
+
+        let chart = null;
+        function renderChart(analytics) {
+            const ctx = document.getElementById('analyticsChart').getContext('2d');
+            if (chart) chart.destroy();
+            chart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['Total', 'Approved', 'Rejected', 'Pending'],
+                    datasets: [{
+                        data: [analytics.total_requests, analytics.approved_requests, analytics.rejected_requests, analytics.pending_requests],
+                        backgroundColor: ['#3b82f6', '#22c55e', '#ef4444', '#f59e0b'],
+                        borderRadius: 6
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        x: { ticks: { color: '#a3a3a3' }, grid: { color: '#222' } },
+                        y: { ticks: { color: '#a3a3a3' }, grid: { color: '#222' } }
+                    }
+                }
+            });
+        }
+
+        async function rejectApproval(id) {
+            if (!confirm('Reject this request?')) return;
+            try {
+                await fetch(`${API}/dean/reject/${id}`, { method: 'PUT' });
+                setTimeout(loadDashboard, 500);
+            } catch (e) {
+                alert('Error: ' + e.message);
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const name = localStorage.getItem('name') || 'Dean';
+            document.getElementById('deanName').textContent = name;
+            loadDashboard();
+            setInterval(loadDashboard, 30000);
+        });
+    </script>
+</body>
+</html>

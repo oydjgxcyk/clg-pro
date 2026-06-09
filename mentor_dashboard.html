@@ -1,0 +1,642 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DOMS | Mentor Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        :root {
+            --bg-color: #0f172a;
+            --surface: rgba(30, 41, 59, 0.7);
+            --surface-solid: #1e293b;
+            --primary: #3b82f6;
+            --primary-hover: #2563eb;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --border: rgba(255, 255, 255, 0.1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            min-height: 100vh;
+            display: flex;
+            overflow: hidden;
+        }
+
+        .sidebar {
+            width: 260px;
+            background: var(--surface-solid);
+            border-right: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            padding: 1.5rem;
+            height: 100vh;
+        }
+
+        .brand {
+            font-size: 1.5rem;
+            font-weight: 700;
+            background: linear-gradient(to right, #60a5fa, #a78bfa);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 2rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .nav-item {
+            padding: 0.75rem 1rem;
+            color: var(--text-muted);
+            text-decoration: none;
+            border-radius: 8px;
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            transition: 0.2s;
+        }
+
+        .nav-item:hover,
+        .nav-item.active {
+            background: rgba(59, 130, 246, 0.1);
+            color: var(--primary);
+        }
+
+        .main-content {
+            flex: 1;
+            padding: 2rem;
+            overflow-y: auto;
+            height: 100vh;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+
+        .profile-section {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .profile-avatar {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            font-size: 1.2rem;
+        }
+
+        .kebab-menu {
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            font-size: 1.25rem;
+            cursor: pointer;
+        }
+
+        .analytics-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: var(--surface);
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .stat-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+        }
+
+        .icon-blue {
+            background: rgba(59, 130, 246, 0.1);
+            color: var(--primary);
+        }
+
+        .icon-green {
+            background: rgba(16, 185, 129, 0.1);
+            color: var(--success);
+        }
+
+        .icon-red {
+            background: rgba(239, 68, 68, 0.1);
+            color: var(--danger);
+        }
+
+        .icon-yellow {
+            background: rgba(245, 158, 11, 0.1);
+            color: var(--warning);
+        }
+
+        .requests-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .request-card {
+            background: var(--surface);
+            backdrop-filter: blur(12px);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 1.5rem;
+            transition: all 0.3s ease;
+        }
+
+        .request-card:hover {
+            transform: translateY(-5px);
+            border-color: rgba(255, 255, 255, 0.2);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 1rem;
+        }
+
+        .status-badge {
+            font-size: 0.75rem;
+            padding: 4px 8px;
+            border-radius: 20px;
+            font-weight: 500;
+            background: rgba(245, 158, 11, 0.1);
+            color: var(--warning);
+            border: 1px solid rgba(245, 158, 11, 0.2);
+        }
+
+        .attendance-module {
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .progress-bg {
+            width: 100%;
+            height: 6px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 3px;
+            overflow: hidden;
+            margin-top: 0.5rem;
+        }
+
+        .progress-bar {
+            height: 100%;
+            border-radius: 3px;
+        }
+
+        .bg-green {
+            background: var(--success);
+            box-shadow: 0 0 8px var(--success);
+        }
+
+        .bg-yellow {
+            background: var(--warning);
+            box-shadow: 0 0 8px var(--warning);
+        }
+
+        .bg-red {
+            background: var(--danger);
+            box-shadow: 0 0 8px var(--danger);
+        }
+
+        .details-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.5rem;
+            font-size: 0.85rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .detail-label {
+            color: var(--text-muted);
+        }
+
+        .actions {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .btn {
+            flex: 1;
+            padding: 0.7rem;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.2s;
+            display: flex;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+
+        .btn-approve {
+            background: var(--primary);
+            color: white;
+        }
+
+        .btn-reject {
+            background: transparent;
+            border: 1px solid var(--border);
+            color: var(--text-main);
+        }
+
+        .btn-reject:hover {
+            background: rgba(239, 68, 68, 0.1);
+            color: var(--danger);
+        }
+
+        .notifications {
+            position: fixed;
+            right: -300px;
+            top: 0;
+            width: 300px;
+            height: 100vh;
+            background: var(--surface-solid);
+            border-left: 1px solid var(--border);
+            padding: 1.5rem;
+            transition: 0.3s;
+            z-index: 1000;
+        }
+
+        .notifications.open {
+            right: 0;
+        }
+
+        .student-card {
+            background: var(--surface);
+            backdrop-filter: blur(12px);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 1.25rem 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .student-avatar {
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            font-size: 1rem;
+            flex-shrink: 0;
+        }
+
+        .student-status-badge {
+            font-size: 0.72rem;
+            padding: 3px 8px;
+            border-radius: 20px;
+            font-weight: 500;
+            margin-left: auto;
+            flex-shrink: 0;
+        }
+
+        .badge-approved {
+            background: rgba(16, 185, 129, 0.1);
+            color: var(--success);
+            border: 1px solid rgba(16, 185, 129, 0.3);
+        }
+
+        .badge-rejected {
+            background: rgba(239, 68, 68, 0.1);
+            color: var(--danger);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+        }
+
+        .badge-pending {
+            background: rgba(245, 158, 11, 0.1);
+            color: var(--warning);
+            border: 1px solid rgba(245, 158, 11, 0.3);
+        }
+    </style>
+</head>
+
+<body>
+
+    <aside class="sidebar">
+        <div class="brand"><i class="fa-solid fa-shield-halved"></i> DOMS</div>
+        <a href="#" class="nav-item active" onclick="loadPending(); return false;"><i class="fa-solid fa-border-all"></i> Dashboard</a>
+        <a onclick="loadMyStudents()" style="cursor:pointer;" class="nav-item"><i class="fa-solid fa-users"></i> My Students</a>
+
+        <div style="margin-top: auto; padding-bottom: 1rem;">
+            <a href="/" class="nav-item" style="color: var(--warning); border: 1px solid rgba(245, 158, 11, 0.2);"><i
+                    class="fa-solid fa-arrow-left"></i> Back to Portal</a>
+        </div>
+        <div>
+            <p style="font-size: 0.8rem; color: var(--text-muted);">Assigned Students: 45</p>
+            <p style="font-size: 0.8rem; color: var(--text-muted);">Dept: Computer Science</p>
+        </div>
+    </aside>
+
+    <main class="main-content">
+        <header class="header">
+            <div>
+                <h1 style="font-size: 1.5rem; font-weight: 600;">Mentor Dashboard</h1>
+                <p style="color: var(--text-muted); font-size: 0.9rem;">Overview of student outpass requests</p>
+            </div>
+            <div class="profile-section">
+                <button class="kebab-menu" onclick="document.getElementById('notif').classList.toggle('open')"><i
+                        class="fa-regular fa-bell"></i></button>
+                <div class="profile-avatar" id="mentorAvatar">JD</div>
+                <div style="line-height: 1.2;">
+                    <h2 id="mentorName" style="font-size: 1rem;">Mentor</h2>
+                    <p id="mentorId" style="font-size: 0.8rem; color: var(--text-muted);">Mentor ID: Mentor</p>
+                </div>
+            </div>
+        </header>
+
+        <div class="analytics-grid">
+            <div class="stat-card">
+                <div class="stat-icon icon-blue"><i class="fa-solid fa-spinner"></i></div>
+                <div>
+                    <h3 id="pendingCount" style="font-size: 1.5rem;">0</h3>
+                    <p style="font-size: 0.8rem; color: var(--text-muted);">Pending</p>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon icon-green"><i class="fa-solid fa-check-double"></i></div>
+                <div>
+                    <h3 id="approvedCount" style="font-size: 1.5rem;">0</h3>
+                    <p style="font-size: 0.8rem; color: var(--text-muted);">Approved</p>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon icon-red"><i class="fa-solid fa-xmark"></i></div>
+                <div>
+                    <h3 id="rejectedCount" style="font-size: 1.5rem;">0</h3>
+                    <p style="font-size: 0.8rem; color: var(--text-muted);">Rejected</p>
+                </div>
+            </div>
+        </div>
+
+        <h2 id="sectionTitle" style="font-size: 1.25rem; margin-bottom: 1rem; font-weight: 600;">Action Required</h2>
+
+        <div class="requests-grid" id="requestsGrid">
+            <p style="color:var(--text-muted);">Loading pending requests...</p>
+        </div>
+    </main>
+
+    <div id="notif" class="notifications">
+        <div style="display: flex; justify-content: space-between; margin-bottom: 1rem;">
+            <h3>Alerts</h3>
+            <button onclick="document.getElementById('notif').classList.remove('open')"
+                style="background:none;border:none;color:white;cursor:pointer;"><i
+                    class="fa-solid fa-times"></i></button>
+        </div>
+        <div style="font-size: 0.85rem; border-bottom: 1px solid var(--border); padding-bottom: 1rem;">
+            <p><i class="fa-solid fa-check" style="color:var(--success);"></i> Parent of Alice approved request.</p>
+        </div>
+    </div>
+
+    <script>
+        const API = 'http://127.0.0.1:5000';
+
+        // ── Task 5.1: Read mentor identity from localStorage on load ──────────
+        document.addEventListener('DOMContentLoaded', () => {
+            const name = localStorage.getItem('name') || 'Mentor';
+            const mentorId = localStorage.getItem('mentor_id') || 'Mentor';
+
+            // Derive initials: first letter of each word, max 2
+            const initials = name
+                .split(' ')
+                .filter(w => w.length > 0)
+                .map(w => w[0].toUpperCase())
+                .join('')
+                .slice(0, 2);
+
+            document.getElementById('mentorAvatar').textContent = initials;
+            document.getElementById('mentorName').textContent = name;
+            document.getElementById('mentorId').textContent = 'Mentor ID: ' + mentorId;
+
+            loadPending();
+        });
+
+        async function loadPending() {
+            document.getElementById('sectionTitle').textContent = 'Action Required';
+            try {
+                const [pendingRes, analyticsRes] = await Promise.all([
+                    fetch(`${API}/mentor/pending`),
+                    fetch(`${API}/analytics`)
+                ]);
+                const data = await pendingRes.json();
+                const analytics = await analyticsRes.json();
+
+                document.getElementById('pendingCount').textContent = data.length;
+                document.getElementById('approvedCount').textContent = analytics.approved_requests;
+                // ── Task 5.2: Populate Rejected stat card ──────────────────────
+                document.getElementById('rejectedCount').textContent = analytics.rejected_requests;
+
+                const grid = document.getElementById('requestsGrid');
+                grid.innerHTML = '';
+
+                if (data.length === 0) {
+                    grid.innerHTML = '<p style="color:var(--text-muted);">No pending requests. All caught up! ✅</p>';
+                    return;
+                }
+
+                data.forEach(r => {
+                    const riskColor = r.risk === 'HIGH RISK' ? 'var(--danger)' : r.risk === 'WARNING' ? 'var(--warning)' : 'var(--success)';
+                    const barColor = r.risk === 'HIGH RISK' ? 'bg-red' : r.risk === 'WARNING' ? 'bg-yellow' : 'bg-green';
+                    grid.innerHTML += `
+                    <div class="request-card" id="card-${r.id}" ${r.risk === 'HIGH RISK' ? 'style="border-color:rgba(239,68,68,0.4);"' : ''}>
+                        <div class="card-header">
+                            <div>
+                                <h3 style="font-size:1.1rem;">${r.student_name}</h3>
+                                <p style="font-size:0.8rem;color:var(--text-muted);">${r.roll_number} • ${r.department}</p>
+                            </div>
+                            <span class="status-badge" style="color:${riskColor};border-color:${riskColor};">${r.risk}</span>
+                        </div>
+                        <div class="attendance-module">
+                            <div style="display:flex;justify-content:space-between;font-size:0.85rem;">
+                                <span style="color:${riskColor};">Attendance</span>
+                                <span style="color:${riskColor};font-weight:600;">${r.attendance}%</span>
+                            </div>
+                            <div class="progress-bg">
+                                <div class="progress-bar ${barColor}" style="width:${r.attendance}%;"></div>
+                            </div>
+                        </div>
+                        <div class="details-grid">
+                            <div><span class="detail-label">Reason</span><p>${r.reason}</p></div>
+                            <div><span class="detail-label">Destination</span><p>${r.destination}</p></div>
+                            <div><span class="detail-label">Exit</span><p>${r.exit_time || '--'}</p></div>
+                            <div><span class="detail-label">Return</span><p>${r.return_time || '--'}</p></div>
+                        </div>
+                        <div class="actions">
+                            <button class="btn btn-reject" onclick="rejectReq(${r.id}, this)"><i class="fa-solid fa-xmark"></i> Reject</button>
+                            <button class="btn btn-approve" onclick="approveReq(${r.id}, this)"><i class="fa-solid fa-paper-plane"></i> Send to Parent</button>
+                        </div>
+                    </div>`;
+                });
+            } catch (e) {
+                document.getElementById('requestsGrid').innerHTML =
+                    '<p style="color:var(--danger);">Cannot connect to server. Make sure Flask is running on port 5000.</p>';
+            }
+        }
+
+        async function approveReq(id, btn) {
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Sending...';
+            btn.disabled = true;
+            try {
+                const res = await fetch(`${API}/mentor/approve/${id}`, { method: 'PUT' });
+                const data = await res.json();
+                btn.innerHTML = '<i class="fa-solid fa-check"></i> Sent to Parent!';
+                btn.style.background = 'var(--success)';
+                setTimeout(() => {
+                    const card = document.getElementById(`card-${id}`);
+                    card.style.opacity = '0';
+                    card.style.transition = '0.4s';
+                    setTimeout(() => { card.remove(); loadPending(); }, 400);
+                }, 800);
+            } catch (e) {
+                btn.innerHTML = 'Send to Parent';
+                btn.disabled = false;
+                alert('Error: ' + e.message);
+            }
+        }
+
+        async function rejectReq(id, btn) {
+            if (!confirm('Reject this request?')) return;
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>';
+            btn.disabled = true;
+            try {
+                await fetch(`${API}/mentor/reject/${id}`, { method: 'PUT' });
+                const card = document.getElementById(`card-${id}`);
+                card.style.opacity = '0';
+                card.style.transition = '0.4s';
+                setTimeout(() => { card.remove(); loadPending(); }, 400);
+            } catch (e) {
+                btn.innerHTML = 'Reject';
+                btn.disabled = false;
+                alert('Error: ' + e.message);
+            }
+        }
+
+        // ── Task 5.3: Implement "My Students" view ────────────────────────────
+        async function loadMyStudents() {
+            document.getElementById('sectionTitle').textContent = 'My Students';
+            const grid = document.getElementById('requestsGrid');
+            grid.innerHTML = '<p style="color:var(--text-muted);">Loading students...</p>';
+
+            try {
+                const res = await fetch(`${API}/student-requests`);
+                const data = await res.json();
+
+                // Deduplicate by roll_number, keeping the latest request per student
+                const studentMap = new Map();
+                data.forEach(r => {
+                    const existing = studentMap.get(r.roll_number);
+                    // Keep the entry with the highest id (latest request)
+                    if (!existing || r.id > existing.id) {
+                        studentMap.set(r.roll_number, r);
+                    }
+                });
+
+                const students = Array.from(studentMap.values());
+
+                if (students.length === 0) {
+                    grid.innerHTML = `
+                        <div style="grid-column:1/-1;">
+                            <p style="color:var(--text-muted); margin-bottom:1rem;">No students found.</p>
+                            <button class="btn btn-approve" style="max-width:200px;" onclick="loadPending()">
+                                <i class="fa-solid fa-arrow-left"></i> Back to Pending
+                            </button>
+                        </div>`;
+                    return;
+                }
+
+                // Build student cards
+                let html = '';
+                students.forEach(r => {
+                    const initials = (r.student_name || 'S')
+                        .split(' ')
+                        .filter(w => w.length > 0)
+                        .map(w => w[0].toUpperCase())
+                        .join('')
+                        .slice(0, 2);
+
+                    const status = r.final_status || r.mentor_status || 'Pending';
+                    let badgeClass = 'badge-pending';
+                    if (status === 'Approved') badgeClass = 'badge-approved';
+                    else if (status === 'Rejected') badgeClass = 'badge-rejected';
+
+                    html += `
+                    <div class="student-card">
+                        <div class="student-avatar">${initials}</div>
+                        <div style="flex:1; min-width:0;">
+                            <h3 style="font-size:1rem; font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${r.student_name}</h3>
+                            <p style="font-size:0.8rem; color:var(--text-muted);">${r.roll_number} • ${r.department}</p>
+                        </div>
+                        <span class="student-status-badge ${badgeClass}">${status}</span>
+                    </div>`;
+                });
+
+                // Add "Back to Pending" button at the end
+                html += `
+                    <div style="grid-column:1/-1; margin-top:0.5rem;">
+                        <button class="btn btn-approve" style="max-width:220px;" onclick="loadPending()">
+                            <i class="fa-solid fa-arrow-left"></i> Back to Pending
+                        </button>
+                    </div>`;
+
+                grid.innerHTML = html;
+
+            } catch (e) {
+                grid.innerHTML = `
+                    <div style="grid-column:1/-1;">
+                        <p style="color:var(--danger); margin-bottom:1rem;">Cannot connect to server. Make sure Flask is running on port 5000.</p>
+                        <button class="btn btn-approve" style="max-width:200px;" onclick="loadPending()">
+                            <i class="fa-solid fa-arrow-left"></i> Back to Pending
+                        </button>
+                    </div>`;
+            }
+        }
+    </script>
+</body>
+
+</html>

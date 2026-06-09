@@ -1,0 +1,666 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DOMS | Advanced Security Analytics Dashboard</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- Chart.js for Advanced Security Analytics -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <style>
+        :root {
+            --bg-color: #050505;
+            --surface: #111111;
+            --surface-border: #2a2a2a;
+            --primary: #3b82f6;
+            --success: #22c55e;
+            --warning: #eab308;
+            --danger: #ef4444;
+            --text-main: #f8fafc;
+            --text-muted: #a3a3a3;
+        }
+
+        body {
+            background: var(--bg-color);
+            color: var(--text-main);
+            font-family: 'Inter', sans-serif;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* Top Navigation */
+        .top-bar {
+            background: rgba(17, 17, 17, 0.9);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid var(--surface-border);
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .wrapper {
+            display: flex;
+            height: calc(100vh - 73px);
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: 260px;
+            background: var(--surface);
+            border-right: 1px solid var(--surface-border);
+            padding: 1.5rem 1rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .nav-link {
+            color: var(--text-muted);
+            border-radius: 8px;
+            padding: 0.8rem 1rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            transition: 0.3s;
+            cursor: pointer;
+            text-decoration: none;
+            font-size: 0.9rem;
+        }
+
+        .nav-link:hover,
+        .nav-link.active {
+            background: rgba(59, 130, 246, 0.1);
+            color: var(--primary);
+            border-left: 3px solid var(--primary);
+        }
+
+        .nav-link i {
+            width: 20px;
+            text-align: center;
+        }
+
+        .main-content {
+            flex: 1;
+            padding: 2rem;
+            overflow-y: auto;
+        }
+
+        .tab-content {
+            display: none;
+            animation: fadeIn 0.4s ease-out;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Dashboard Cards */
+        .stat-card {
+            background: var(--surface);
+            border: 1px solid var(--surface-border);
+            border-radius: 12px;
+            padding: 1.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            transition: 0.3s;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            border-color: rgba(255, 255, 255, 0.2);
+        }
+
+        .stat-val {
+            font-size: 2rem;
+            font-weight: 700;
+            line-height: 1;
+        }
+
+        .pulse-dot {
+            width: 10px;
+            height: 10px;
+            background: var(--warning);
+            border-radius: 50%;
+            display: inline-block;
+            animation: pulse 1.5s infinite;
+            margin-right: 8px;
+        }
+
+        @keyframes pulse {
+            0% {
+                box-shadow: 0 0 0 0 rgba(234, 179, 8, 0.7);
+            }
+
+            70% {
+                box-shadow: 0 0 0 10px rgba(234, 179, 8, 0);
+            }
+
+            100% {
+                box-shadow: 0 0 0 0 rgba(234, 179, 8, 0);
+            }
+        }
+
+        /* Tables & Charts Container */
+        .sec-panel {
+            background: var(--surface);
+            border: 1px solid var(--surface-border);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-top: 1.5rem;
+        }
+
+        .table-dark {
+            --bs-table-bg: transparent;
+            --bs-table-striped-bg: rgba(255, 255, 255, 0.02);
+            border-color: var(--surface-border);
+        }
+
+        .table-dark th {
+            color: var(--text-muted);
+            font-weight: 500;
+            border-bottom-color: #333;
+        }
+
+        .table-dark td {
+            vertical-align: middle;
+            border-bottom-color: #222;
+            font-size: 0.9rem;
+        }
+
+        .avatar-sm {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: #333;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1rem;
+            overflow: hidden;
+        }
+
+        /* Security Feature Toggles */
+        .feature-box {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid var(--surface-border);
+            padding: 1rem;
+            border-radius: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .form-switch .form-check-input {
+            background-color: #333;
+            border-color: #444;
+            width: 3em;
+            height: 1.5em;
+            cursor: pointer;
+        }
+
+        .form-switch .form-check-input:checked {
+            background-color: var(--success);
+            border-color: var(--success);
+        }
+    </style>
+</head>
+
+<body>
+    <div class="top-bar">
+        <div class="d-flex align-items-center gap-4">
+            <h4 class="mb-0 text-white fw-bold"><i class="fa-solid fa-shield-halved text-primary"></i> DOMS Security
+            </h4>
+            <a href="/" class="text-muted text-decoration-none"><i class="fa-solid fa-house"></i> Portal</a>
+        </div>
+        <div class="d-flex align-items-center gap-4">
+            <div class="text-muted small" id="liveClock"><i class="fa-regular fa-clock"></i> Loading...</div>
+            <div
+                style="background: rgba(234, 179, 8, 0.1); color: var(--warning); padding: 6px 15px; border-radius: 20px; font-size: 0.85rem; border: 1px solid rgba(234, 179, 8, 0.2); font-weight: 600;">
+                <span class="pulse-dot"></span> <span id="outsideBadge">--</span> Live Outside Campus
+            </div>
+            <div class="d-flex align-items-center gap-2">
+                <div class="avatar-sm text-primary" style="background: rgba(59,130,246,0.1);"><i
+                        class="fa-solid fa-user-shield"></i></div>
+                <div class="small fw-bold" id="officerName">Security Officer</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="wrapper">
+        <aside class="sidebar">
+            <a class="nav-link active" onclick="switchTab('dashboard', this)"><i class="fa-solid fa-desktop"></i> Live
+                Monitor</a>
+            <a class="nav-link" onclick="switchTab('analytics', this)"><i class="fa-solid fa-chart-line"></i> Security
+                Analytics</a>
+            <a class="nav-link" onclick="switchTab('logs', this)"><i class="fa-solid fa-server"></i> Security Logs</a>
+            <a class="nav-link" onclick="switchTab('features', this)"><i class="fa-solid fa-fingerprint"></i> System
+                Features</a>
+            <a href="/security" class="nav-link text-info"
+                style="margin-top: 1rem; background: rgba(14,165,233,0.1);"><i class="fa-solid fa-camera"></i> Launch
+                Scanner</a>
+
+            <a href="/" class="nav-link text-danger mt-auto" style="border:none;"><i
+                    class="fa-solid fa-right-from-bracket"></i> Logout</a>
+        </aside>
+
+        <main class="main-content">
+
+            <!-- LIVE MONITOR TAB -->
+            <div id="dashboard" class="tab-content active">
+                <div class="row g-4">
+                    <div class="col-md-3">
+                        <div class="stat-card" style="border-left: 4px solid var(--warning);">
+                            <div>
+                                <div class="text-muted small mb-2">Outside Campus</div>
+                                <div class="stat-val text-warning" id="outsideCount">--</div>
+                            </div>
+                            <i class="fa-solid fa-users text-warning fs-1 opacity-25"></i>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="stat-card" style="border-left: 4px solid var(--success);">
+                            <div>
+                                <div class="text-muted small mb-2">Total Approved</div>
+                                <div class="stat-val text-success" id="approvedCount">--</div>
+                            </div>
+                            <i class="fa-solid fa-check-double text-success fs-1 opacity-25"></i>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="stat-card" style="border-left: 4px solid var(--danger); background: rgba(239, 68, 68, 0.05);">
+                            <div>
+                                <div class="text-danger small mb-2 fw-bold">Rejected</div>
+                                <div class="stat-val text-danger" id="rejectedCount">--</div>
+                            </div>
+                            <i class="fa-solid fa-ban text-danger fs-1 opacity-50"></i>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="stat-card" style="border-left: 4px solid #8b5cf6;">
+                            <div>
+                                <div class="text-muted small mb-2">Pending</div>
+                                <div class="stat-val" style="color: #8b5cf6;" id="pendingCount">--</div>
+                            </div>
+                            <i class="fa-solid fa-spinner fs-1 opacity-25" style="color: #8b5cf6;"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="sec-panel mt-4">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <h5 class="mb-0">Live Student Movement</h5>
+                        <div class="d-flex gap-2">
+                            <input type="text" class="form-control form-control-sm bg-dark text-white border-secondary"
+                                placeholder="Search Roll or Name..." style="width: 250px;">
+                            <select class="form-select form-select-sm bg-dark text-white border-secondary">
+                                <option>All Depts</option>
+                                <option>CS</option>
+                            </select>
+                            <select class="form-select form-select-sm bg-dark text-white border-secondary">
+                                <option>Sort by Return Time</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="table-responsive">
+                        <table class="table table-dark table-hover mb-0">
+                            <thead>
+                                <tr>
+                                    <th>Photo</th>
+                                    <th>Student Details</th>
+                                    <th>Exit Time</th>
+                                    <th>Destination</th>
+                                    <th>Expected Return</th>
+                                    <th>Movement Status</th>
+                                    <th>QR Auth</th>
+                                </tr>
+                            </thead>
+                            <tbody id="liveMonitorBody">
+                                <tr><td colspan="7" class="text-center text-muted">Loading live data...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ANALYTICS TAB -->
+            <div id="analytics" class="tab-content">
+                <h4 class="mb-4">Security Analytics & Trends</h4>
+                <div class="row g-4">
+                    <div class="col-md-6">
+                        <div class="sec-panel mt-0 h-100">
+                            <h6 class="text-muted mb-3">Peak Exit Timing (Today)</h6>
+                            <canvas id="exitChart" height="200"></canvas>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="sec-panel mt-0 h-100">
+                            <h6 class="text-muted mb-3">Department-wise Outside Students</h6>
+                            <canvas id="deptPieChart" height="200"></canvas>
+                        </div>
+                    </div>
+                    <div class="col-12">
+                        <div class="sec-panel">
+                            <h6 class="text-muted mb-3">Monthly Outpass Volume Analytics</h6>
+                            <canvas id="monthlyBarChart" height="100"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SECURITY LOGS TAB -->
+            <div id="logs" class="tab-content">
+                <div class="sec-panel mt-0">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <h5 class="mb-0"><i class="fa-solid fa-database text-primary"></i> Master Security Logs</h5>
+                        <div class="d-flex gap-2">
+                            <button class="btn btn-outline-success btn-sm"><i class="fa-solid fa-file-excel"></i> Export
+                                Excel</button>
+                            <button class="btn btn-outline-danger btn-sm"><i class="fa-solid fa-file-pdf"></i> Export
+                                PDF</button>
+                        </div>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table table-dark table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Timestamp</th>
+                                    <th>Event Type</th>
+                                    <th>Target Identity</th>
+                                    <th>Scan Station</th>
+                                    <th>Security Officer</th>
+                                    <th>Log Status</th>
+                                </tr>
+                            </thead>
+                            <tbody id="logsBody">
+                                <tr><td colspan="6" class="text-center text-muted">Click "Security Logs" to load.</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- PROFESSIONAL FEATURES TAB -->
+            <div id="features" class="tab-content">
+                <div class="sec-panel mt-0 mx-auto" style="max-width: 800px;">
+                    <h5 class="mb-4 text-primary"><i class="fa-solid fa-fingerprint"></i> Professional Security Settings
+                    </h5>
+
+                    <div class="feature-box border-success">
+                        <div>
+                            <h6 class="mb-1 text-success"><i class="fa-solid fa-qrcode"></i> One-Time QR Scan &
+                                Auto-Expiry</h6>
+                            <p class="small text-muted mb-0">QR passes are automatically invalidated and marked
+                                'Expired' the moment they are scanned at the exit gate.</p>
+                        </div>
+                        <div class="form-check form-switch"><input class="form-check-input" type="checkbox" checked
+                                disabled></div>
+                    </div>
+
+                    <div class="feature-box border-warning">
+                        <div>
+                            <h6 class="mb-1 text-warning"><i class="fa-solid fa-mobile-screen"></i> SMS Alert for Late
+                                Return</h6>
+                            <p class="small text-muted mb-0">Automatically trigger SMS alerts to Parents & Mentors if a
+                                student misses their expected return time.</p>
+                        </div>
+                        <div class="form-check form-switch"><input class="form-check-input" type="checkbox" checked>
+                        </div>
+                    </div>
+
+                    <div class="feature-box">
+                        <div>
+                            <h6 class="mb-1 text-white"><i class="fa-solid fa-location-dot"></i> Geo-Location Logging
+                            </h6>
+                            <p class="small text-muted mb-0">Capture the exact GPS coordinates of the security device
+                                verifying the QR code.</p>
+                        </div>
+                        <div class="form-check form-switch"><input class="form-check-input" type="checkbox" checked>
+                        </div>
+                    </div>
+
+                    <div class="feature-box border-primary">
+                        <div>
+                            <h6 class="mb-1 text-primary"><i class="fa-solid fa-face-viewfinder"></i> AI Face
+                                Verification (Beta)</h6>
+                            <p class="small text-muted mb-0">Cross-reference the scanned QR code with a live camera
+                                facial capture at the gate.</p>
+                        </div>
+                        <div class="form-check form-switch"><input class="form-check-input" type="checkbox"></div>
+                    </div>
+
+                    <div class="feature-box">
+                        <div>
+                            <h6 class="mb-1 text-white"><i class="fa-solid fa-database"></i> Live Database
+                                Synchronization</h6>
+                            <p class="small text-muted mb-0">Push exit/entry logs to the cloud instantly via WebSockets.
+                            </p>
+                        </div>
+                        <div class="form-check form-switch"><input class="form-check-input" type="checkbox" checked>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </main>
+    </div>
+
+    <script>
+        function switchTab(tabId, element) {
+            document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
+            document.getElementById(tabId).classList.add('active');
+            element.classList.add('active');
+            if (tabId === 'logs') loadLogs();
+            if (tabId === 'analytics') initCharts();
+        }
+
+        const API = 'http://127.0.0.1:5000';
+
+        async function loadLiveMonitor() {
+            try {
+                const [reqRes, statsRes] = await Promise.all([
+                    fetch(`${API}/student-requests`),
+                    fetch(`${API}/security/stats`)
+                ]);
+                const data = await reqRes.json();
+                const stats = await statsRes.json();
+
+                // Update stat cards
+                document.getElementById('outsideCount').textContent = stats.outside_count;
+                document.getElementById('approvedCount').textContent = stats.approved_count;
+                document.getElementById('rejectedCount').textContent = stats.rejected_count;
+                document.getElementById('pendingCount').textContent = stats.pending_count;
+                document.getElementById('outsideBadge').textContent = stats.outside_count;
+
+                // Fix: use correct selector
+                const tbody = document.getElementById('liveMonitorBody');
+                tbody.innerHTML = '';
+
+                const approved = data.filter(r => r.status === 'Approved');
+                if (approved.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="7" class="text-center text-muted">No approved outpasses yet.</td></tr>';
+                    return;
+                }
+
+                approved.forEach(r => {
+                    tbody.innerHTML += `
+                    <tr>
+                        <td><div class="avatar-sm" style="background:rgba(59,130,246,0.1);color:#3b82f6;"><i class="fa-solid fa-user"></i></div></td>
+                        <td><strong>${r.student_name}</strong><br><span class="text-muted small">${r.roll_number}</span></td>
+                        <td>${r.exit_time || '--'}</td>
+                        <td>${r.destination || '--'}</td>
+                        <td>${r.return_time || '--'}</td>
+                        <td><span class="badge bg-warning text-dark"><span class="pulse-dot" style="width:6px;height:6px;background:#000;"></span> Outside</span></td>
+                        <td>
+                            <button onclick="verifyQR(${r.id}, this)" class="btn btn-sm btn-outline-success">
+                                <i class="fa-solid fa-qrcode"></i> Verify
+                            </button>
+                        </td>
+                    </tr>`;
+                });
+            } catch (e) {
+                console.warn('Could not load live monitor:', e.message);
+            }
+        }
+
+        async function loadLogs() {
+            const tbody = document.getElementById('logsBody');
+            if (!tbody) return;
+            tbody.innerHTML = '<tr><td colspan="6" class="text-center text-muted">Loading...</td></tr>';
+            try {
+                const res = await fetch(`${API}/student-requests`);
+                const data = await res.json();
+                const officer = localStorage.getItem('name') || 'Security Officer';
+                if (data.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="6" class="text-center text-muted">No records yet.</td></tr>';
+                    return;
+                }
+                tbody.innerHTML = '';
+                data.slice().reverse().forEach(r => {
+                    let eventType, statusClass;
+                    if (r.status === 'Approved') {
+                        eventType = '<i class="fa-solid fa-arrow-right-from-bracket text-warning"></i> Campus Exit';
+                        statusClass = 'text-success';
+                    } else if (r.status === 'Rejected') {
+                        eventType = '<i class="fa-solid fa-ban text-danger"></i> Rejected';
+                        statusClass = 'text-danger fw-bold';
+                    } else {
+                        eventType = '<i class="fa-solid fa-spinner text-muted"></i> Pending Review';
+                        statusClass = 'text-muted';
+                    }
+                    const ts = r.exit_time || r.created_at || '--';
+                    tbody.innerHTML += `<tr>
+                        <td>${ts}</td>
+                        <td>${eventType}</td>
+                        <td>${r.student_name} (${r.roll_number})</td>
+                        <td>Main Gate</td>
+                        <td>${officer}</td>
+                        <td class="${statusClass}">${r.status.toUpperCase()}</td>
+                    </tr>`;
+                });
+            } catch (e) {
+                tbody.innerHTML = '<tr><td colspan="6" class="text-center text-danger">Error loading logs.</td></tr>';
+            }
+        }
+
+        let chartsInitialized = false;
+        async function initCharts() {
+            if (chartsInitialized) return;
+            chartsInitialized = true;
+            Chart.defaults.color = '#a3a3a3';
+            Chart.defaults.borderColor = '#2a2a2a';
+            try {
+                const [analyticsRes, statsRes] = await Promise.all([
+                    fetch(`${API}/analytics`),
+                    fetch(`${API}/security/stats`)
+                ]);
+                const analytics = await analyticsRes.json();
+                const stats = await statsRes.json();
+
+                new Chart(document.getElementById('exitChart'), {
+                    type: 'bar',
+                    data: {
+                        labels: ['Total', 'Approved', 'Rejected', 'Pending'],
+                        datasets: [{
+                            label: 'Requests',
+                            data: [analytics.total_requests, analytics.approved_requests, analytics.rejected_requests, analytics.pending_requests],
+                            backgroundColor: ['#3b82f6', '#22c55e', '#ef4444', '#eab308'],
+                            borderRadius: 4
+                        }]
+                    },
+                    options: { responsive: true, maintainAspectRatio: false }
+                });
+
+                new Chart(document.getElementById('deptPieChart'), {
+                    type: 'doughnut',
+                    data: {
+                        labels: ['Approved', 'Rejected', 'Pending'],
+                        datasets: [{
+                            data: [stats.approved_count, stats.rejected_count, stats.pending_count],
+                            backgroundColor: ['#22c55e', '#ef4444', '#eab308'],
+                            borderWidth: 0
+                        }]
+                    },
+                    options: { responsive: true, maintainAspectRatio: false }
+                });
+
+                new Chart(document.getElementById('monthlyBarChart'), {
+                    type: 'bar',
+                    data: {
+                        labels: ['Total', 'Approved', 'Rejected', 'Pending'],
+                        datasets: [{
+                            label: 'Outpass Volume',
+                            data: [analytics.total_requests, analytics.approved_requests, analytics.rejected_requests, analytics.pending_requests],
+                            backgroundColor: '#3b82f6', borderRadius: 4
+                        }]
+                    },
+                    options: { responsive: true, maintainAspectRatio: false }
+                });
+            } catch (e) {
+                console.warn('Charts error:', e.message);
+            }
+        }
+
+        async function verifyQR(id, btn) {
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>';
+            btn.disabled = true;
+            try {
+                const res = await fetch(`${API}/security/verify/${id}`);
+                const data = await res.json();
+                if (data.status === 'VALID') {
+                    btn.innerHTML = '<i class="fa-solid fa-check"></i> VALID';
+                    btn.className = 'btn btn-sm btn-success';
+                    alert(`VALID PASS\nStudent: ${data.student_name}\nRoll: ${data.roll_number}\nDestination: ${data.destination}`);
+                } else {
+                    btn.innerHTML = '<i class="fa-solid fa-ban"></i> INVALID';
+                    btn.className = 'btn btn-sm btn-danger';
+                }
+            } catch (e) {
+                btn.innerHTML = 'Verify';
+                btn.disabled = false;
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            // Officer name from localStorage
+            const officer = localStorage.getItem('name') || 'Security Officer';
+            document.getElementById('officerName').textContent = officer;
+
+            // Live clock
+            function updateClock() {
+                document.getElementById('liveClock').innerHTML =
+                    `<i class="fa-regular fa-clock"></i> ${new Date().toLocaleString()}`;
+            }
+            updateClock();
+            setInterval(updateClock, 1000);
+
+            loadLiveMonitor();
+        });
+    </script>
+</body>
+
+</html>
